@@ -15,7 +15,9 @@ export const getAllTasks = async (limit: number, offset: number) => {
 
 export const getTaskById = async (id: number) => {
   try {
-    const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
+    const result = await pool.query("SELECT * FROM tasks WHERE task_id = $1", [
+      id,
+    ]);
     return result.rows[0];
   } catch (error) {
     console.log("Error Fetching Task Please Try Again.", error);
@@ -43,7 +45,7 @@ export const updateTask = async (
 ) => {
   try {
     const result = await pool.query(
-      "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING*",
+      "UPDATE tasks SET title = $1, description = $2 WHERE task_id = $3 RETURNING*",
       [title, description, id],
     );
     return result.rows[0];
@@ -56,7 +58,7 @@ export const updateTask = async (
 export const deleteTask = async (id: number) => {
   try {
     const result = await pool.query(
-      "DELETE FROM tasks WHERE id = $1 RETURNING*",
+      "DELETE FROM tasks WHERE task_id = $1 RETURNING*",
       [id],
     );
     return result.rows[0];
@@ -66,10 +68,13 @@ export const deleteTask = async (id: number) => {
   }
 };
 
-export const changeTaskStatus = async (id: number, status: string) => {
+export const changeTaskStatus = async (
+  id: number,
+  status: "pending" | "Inprogress" | "completed",
+) => {
   try {
     const result = await pool.query(
-      "UPDATE tasks SET status = $1 WHERE id = $2 RETURNING*",
+      "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING*",
       [status, id],
     );
     return result.rows[0];
