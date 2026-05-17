@@ -1,4 +1,4 @@
-import pool from "../db";
+import pool from "../db.js";
 
 export const createUser = async (
   username: string,
@@ -29,9 +29,12 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (limit: number, offset: number) => {
   try {
-    const result = await pool.query("SELECT * FROM users");
+    const result = await pool.query("SELECT * FROM users LIMIT $1 OFFSET $2", [
+      limit,
+      offset,
+    ]);
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Users Please Try Again.", error);
@@ -61,8 +64,8 @@ export const deleteUser = async (id: number) => {
 
 export const updateUser = async (
   id: number,
-  email: string,
   password: string,
+  email: string,
 ) => {
   try {
     const result = await pool.query(

@@ -1,4 +1,4 @@
-import pool from "../db";
+import pool from "../db.js";
 
 export const getAllTaskComments = async (task_id: number) => {
   try {
