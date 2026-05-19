@@ -1,8 +1,11 @@
 import pool from "../db.js";
 
-export const getAllWorkspace = async () => {
+export const getAllWorkspaces = async (limit: number, offset: number) => {
   try {
-    const result = await pool.query("SELECT * FROM workspace ORDER BY id DESC");
+    const result = await pool.query(
+      "SELECT workspace.id,workspace.name,workspace.created_at,users.name AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id ORDER BY workspace.id DESC LIMIT $1 OFFSET $2",
+      [limit, offset],
+    );
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Workspace Please Try Again.", error);
@@ -10,11 +13,11 @@ export const getAllWorkspace = async () => {
   }
 };
 
-export const createWorkspace = async (name: string) => {
+export const createWorkspace = async (name: string, owner_id: number) => {
   try {
     const result = await pool.query(
-      "INSERT INTO workspace(name) VALUES ($1) RETURNING*",
-      [name],
+      "INSERT INTO workspace(name,owner_id) VALUES ($1,$2) RETURNING*",
+      [name, owner_id],
     );
     return result.rows[0];
   } catch (error) {
