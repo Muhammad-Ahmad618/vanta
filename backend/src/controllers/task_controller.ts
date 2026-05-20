@@ -27,7 +27,7 @@ export const fetchAllTasks = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error Occured while Fetching Task Please Try Again" });
   }
 };
 
@@ -48,7 +48,7 @@ export const fetchTasksByCreatorId = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal Server Error Please Try Again" });
   }
 };
 
@@ -79,7 +79,7 @@ export const AddNewTask = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task created successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Creating Task Please Try Again" });
   }
 };
 
@@ -117,7 +117,7 @@ export const updateTaskDetails = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task updated successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Updating Task Details Please Try Again" });
   }
 };
 
@@ -148,7 +148,7 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task status changed successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Updating Task Status Please Try Again" });
   }
 };
 
@@ -172,7 +172,7 @@ export const removeTask = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task deleted successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Deleting Task Please Try Again" });
   }
 };
 
@@ -202,6 +202,6 @@ export const fetchAssignedTasks = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal Server Error Please Try Again" });
   }
 };

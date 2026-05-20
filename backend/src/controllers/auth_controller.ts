@@ -36,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
       data: user,
     });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal server error. Please try again." });
   }
 };
 
@@ -67,6 +67,6 @@ export const register = async (req: Request, res: Response) => {
       data: user,
     });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal server error. Please try again." });
   }
 };

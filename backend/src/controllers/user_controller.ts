@@ -20,7 +20,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Users fetched successfully", data: users });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Fetching Users. Please Try Again" });
   }
 };
 
@@ -40,7 +40,7 @@ export const fetchUserByEmail = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "User fetched successfully", data: user });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal Server Error. Please Try Again" });
   }
 };
 
@@ -60,7 +60,7 @@ export const fetchUserById = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "User fetched successfully", data: user });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Internal Server Error. Please Try Again" });
   }
 };
 
@@ -80,7 +80,7 @@ export const removeUser = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "User deleted successfully", data: user });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error Deleting User. Please Try Again" });
   }
 };
 
@@ -115,6 +115,6 @@ export const updateUserPassword = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Password Updated successfully", data: user });
   } catch (error) {
-    return res.status(500).json({ message: getErrorMessage(error) });
+    return res.status(500).json({ message: "Error While Updating Password. Please Try Again" });
   }
 };

@@ -55,7 +55,7 @@ export const deleteWorkspace = async (id: number) => {
 export const getWorkspaceById = async (id: number) => {
   try {
     const result = await pool.query(
-      "SELECT workspace.name, workspace.created_at, users.name FROM workspace INNER JOIN users ON workspace.owner_id = users.id WHERE workspace.id = $1",
+      "SELECT workspace.name AS workspace_name, workspace.created_at, users.name AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id WHERE workspace.id = $1",
       [id],
     );
     return result.rows[0];
@@ -64,3 +64,4 @@ export const getWorkspaceById = async (id: number) => {
     throw error;
   }
 };
+
