@@ -13,11 +13,15 @@ export const getAllWorkspaces = async (limit: number, offset: number) => {
   }
 };
 
-export const createWorkspace = async (name: string, owner_id: number) => {
+export const createWorkspace = async (
+  name: string,
+  description: string,
+  owner_id: number,
+) => {
   try {
     const result = await pool.query(
-      "INSERT INTO workspace(name,owner_id) VALUES ($1,$2) RETURNING*",
-      [name, owner_id],
+      "INSERT INTO workspace(name, description, owner_id) VALUES ($1,$2,$3) RETURNING*",
+      [name, description, owner_id],
     );
     return result.rows[0];
   } catch (error) {
@@ -64,4 +68,3 @@ export const getWorkspaceById = async (id: number) => {
     throw error;
   }
 };
-

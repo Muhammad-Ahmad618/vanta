@@ -8,15 +8,17 @@ import {
   removeTask,
   fetchAssignedTasks,
 } from "../controllers/task_controller.js";
+import { protect } from "@/middleware/authentication.js";
+import { authorize } from "@/middleware/authorization.js";
 
 const router = express.Router();
 
-router.get("/task", fetchAllTasks);
-router.post("/task", AddNewTask);
-router.put("/task/:id", updateTaskDetails);
-router.patch("/task/:id/status", updateTaskStatus);
-router.delete("/task/:id", removeTask);
-router.get("/task/creator/:id", fetchTasksByCreatorId);
-router.get("/task/assigned/:id", fetchAssignedTasks);
+router.get("/task", protect, authorize("admin"), fetchAllTasks);
+router.post("/task", protect, AddNewTask);
+router.put("/task/:id", protect, updateTaskDetails);
+router.patch("/task/:id/status", protect, updateTaskStatus);
+router.delete("/task/:id", protect, removeTask);
+router.get("/task/creator/:id", protect, fetchTasksByCreatorId);
+router.get("/task/assigned/:id", protect, fetchAssignedTasks);
 
 export default router;
