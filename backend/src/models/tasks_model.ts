@@ -69,25 +69,15 @@ export const getTaskByAssignedTo = async (
   status: "pending" | "Inprogress" | "completed" | null,
 ) => {
   try {
-    let query = `
-      SELECT * FROM tasks
-      WHERE assigned_to = $1 AND deleted_at IS NULL
+    const query = `
+      SELECT * FROM tasks WHERE assigned_to = $1 AND deleted_at IS NULL AND ($2::TEXT IS NULL OR status = $2) ORDER BY task_id DESC LIMIT $3 OFFSET $4
     `;
-
-    const values: (number | string)[] = [assigned_to];
-
-    if (status) {
-      values.push(status);
-      query += ` AND status = $${values.length}`;
-    }
-
-    values.push(limit);
-    query += ` ORDER BY task_id DESC LIMIT $${values.length}`;
-
-    values.push(offset);
-    query += ` OFFSET $${values.length}`;
-
-    const result = await pool.query(query, values);
+    const result = await pool.query(query, [
+      assigned_to,
+      status ?? null,
+      limit,
+      offset,
+    ]);
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Tasks Please Try Again.", error);
