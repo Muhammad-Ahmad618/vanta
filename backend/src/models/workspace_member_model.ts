@@ -1,26 +1,39 @@
 import pool from "../db.js";
 
-export const getMembersByWorkspaceId = async (workspaceId: number) => {
+export const getMembersByWorkspaceId = async (
+  workspaceId: number,
+  limit: number,
+  offset: number,
+  role?: string,
+) => {
   try {
-    const result = await pool.query(
-      "SELECT users.name, users.email, workspace.name, workspace_member.joined_at, workspace_member.role FROM workspace_member INNER JOIN users ON workspace_member.user_id = users.id INNER JOIN workspace ON workspace_member.workspace_id = workspace.id WHERE workspace_member.workspace_id = $1",
-      [workspaceId],
-    );
-    return result.rows;
-  } catch (error) {
-    console.log("Error Fetching Workspace Members Please Try Again.", error);
-    throw error;
-  }
-};
+    const query = `
+      SELECT
+        users.username  AS name,
+        users.email,
+        workspace.name,
+        workspace_member.joined_at,
+        workspace_member.role
+      FROM workspace_member
+        INNER JOIN users     ON workspace_member.user_id     = users.id
+        INNER JOIN workspace ON workspace_member.workspace_id = workspace.id
+      WHERE workspace_member.workspace_id = $1
+        AND ($3::text IS NULL OR workspace_member.role = $3)
+      ORDER BY workspace_member.id DESC
+      LIMIT  $2
+      OFFSET $4
+    `;
 
-export const getAllMembers = async () => {
-  try {
-    const result = await pool.query(
-      "SELECT users.name, users.email, workspace.name, workspace_member.joined_at, workspace_member.role FROM workspace_member INNER JOIN users ON workspace_member.user_id = users.id INNER JOIN workspace ON workspace_member.workspace_id = workspace.id",
-    );
+    const result = await pool.query(query, [
+      workspaceId,
+      limit,
+      role ?? null, // pass null when no role filter is needed
+      offset,
+    ]);
+
     return result.rows;
   } catch (error) {
-    console.log("Error Fetching Workspace Members Please Try Again.", error);
+    console.error("Error fetching workspace members:", error);
     throw error;
   }
 };
@@ -28,7 +41,7 @@ export const getAllMembers = async () => {
 export const getWorkspaceMemberById = async (id: number) => {
   try {
     const result = await pool.query(
-      "SELECT users.name, users.email, workspace.name AS workspace_name, workspace_member.role, workspace_member.joined_at FROM workspace_member INNER JOIN users ON workspace_member.user_id = users.id INNER JOIN workspace ON workspace_member.workspace_id = workspace.id WHERE workspace_member.id = $1",
+      "SELECT users.username AS name, users.email, workspace.name AS workspace_name, workspace_member.role, workspace_member.joined_at FROM workspace_member INNER JOIN users ON workspace_member.user_id = users.id INNER JOIN workspace ON workspace_member.workspace_id = workspace.id WHERE workspace_member.id = $1",
       [id],
     );
     return result.rows[0];
@@ -38,7 +51,10 @@ export const getWorkspaceMemberById = async (id: number) => {
   }
 };
 
-export const removeWorkspaceMember = async (id: number, workspace_id: number) => {
+export const removeWorkspaceMember = async (
+  id: number,
+  workspace_id: number,
+) => {
   try {
     const result = await pool.query(
       "DELETE FROM workspace_member WHERE id = $1 AND workspace_id = $2 RETURNING*",
@@ -51,7 +67,11 @@ export const removeWorkspaceMember = async (id: number, workspace_id: number) =>
   }
 };
 
-export const insertWorkspaceMember = async (workspace_id: number, user_id: number, role: "member" | "owner") => {
+export const insertWorkspaceMember = async (
+  workspace_id: number,
+  user_id: number,
+  role: "member" | "owner",
+) => {
   try {
     const result = await pool.query(
       "INSERT INTO workspace_member (workspace_id, user_id, role) VALUES ($1, $2, $3) RETURNING*",
@@ -62,7 +82,7 @@ export const insertWorkspaceMember = async (workspace_id: number, user_id: numbe
     console.log("Error Adding Workspace Member Please Try Again.", error);
     throw error;
   }
-}
+};
 
 export const getWorkspaceOwner = async (id: number) => {
   try {
@@ -75,9 +95,12 @@ export const getWorkspaceOwner = async (id: number) => {
     console.log("Error Finding Workspace Owner Please Try Again.", error);
     throw error;
   }
-}
+};
 
-export const removeCurrentOwner = async (ownerId: number, workspaceId: number) => {
+export const removeCurrentOwner = async (
+  ownerId: number,
+  workspaceId: number,
+) => {
   try {
     const result = await pool.query(
       "UPDATE workspace_member SET role = 'member' WHERE user_id = $1 AND workspace_id = $2 RETURNING*",
@@ -88,7 +111,7 @@ export const removeCurrentOwner = async (ownerId: number, workspaceId: number) =
     console.log("Error Removing Workspace Owner Please Try Again.", error);
     throw error;
   }
-}
+};
 
 export const makeNewOwner = async (newOwnerId: number, workspaceId: number) => {
   try {
@@ -101,9 +124,12 @@ export const makeNewOwner = async (newOwnerId: number, workspaceId: number) => {
     console.log("Error Assigning New Owner Please Try Again.", error);
     throw error;
   }
-}
+};
 
-export const removeWorkspaceMemberByUser = async (userId: number, workspaceId: number) => {
+export const removeWorkspaceMemberByUser = async (
+  userId: number,
+  workspaceId: number,
+) => {
   try {
     const result = await pool.query(
       "DELETE FROM workspace_member  WHERE user_id = $1 AND workspace_id = $2 RETURNING*",
@@ -114,9 +140,13 @@ export const removeWorkspaceMemberByUser = async (userId: number, workspaceId: n
     console.log("Error while leaving Workspace Please Try Again.", error);
     throw error;
   }
-}
+};
 
-export const executeTransferOwnership = async (workspaceId: number, currentOwnerId: number, newOwnerId: number) => {
+export const executeTransferOwnership = async (
+  workspaceId: number,
+  currentOwnerId: number,
+  newOwnerId: number,
+) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -143,7 +173,9 @@ export const executeTransferOwnership = async (workspaceId: number, currentOwner
     const transferowner = transferOwnerResult.rows[0];
 
     if (!removeOwner || !addNewOwner || !transferowner) {
-      throw new Error("Ownership transfer failed: one or more records were not updated.");
+      throw new Error(
+        "Ownership transfer failed: one or more records were not updated.",
+      );
     }
 
     await client.query("COMMIT");

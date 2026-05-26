@@ -29,12 +29,30 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
-export const getAllUsers = async (limit: number, offset: number) => {
+export const getAllUsers = async (
+  limit: number,
+  offset: number,
+  role?: string,
+) => {
   try {
-    const result = await pool.query("SELECT * FROM users LIMIT $1 OFFSET $2", [
-      limit,
-      offset,
-    ]);
+    let query = "SELECT * FROM users WHERE deleted_at IS NULL";
+
+    const values: (number | string)[] = [];
+
+    if (role) {
+      values.push(role);
+      query += `AND role = $${values.length}`;
+    }
+
+    query += " ORDER BY created_at DESC";
+
+    values.push(limit);
+    query += `LIMIT $${values.length} `;
+
+    values.push(offset);
+    query += `OFFSET $${values.length}`;
+
+    const result = await pool.query(query, values);
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Users Please Try Again.", error);
@@ -52,9 +70,12 @@ export const getUserById = async (id: number) => {
   }
 };
 
-export const deleteUser = async (id: number) => {
+export const harddeleteUser = async (id: number) => {
   try {
-    const result = await pool.query("DELETE FROM users WHERE id = $1", [id]);
+    const result = await pool.query(
+      "DELETE FROM users WHERE id = $1 RETURNING id",
+      [id],
+    );
     return result.rows[0];
   } catch (error) {
     console.log("Error Deleting User Please Try Again.", error);
@@ -113,6 +134,32 @@ export const checkExistingPassword = async (id: number) => {
     return result.rows[0].password;
   } catch (error) {
     console.log("Error Fetching Password Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const softDeleteUser = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE users SET deleted_at = NOW() WHERE id = $1 RETURNING id",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Soft Deleting User Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const restoreUser = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE users SET deleted_at = NULL WHERE id = $1 RETURNING id,username",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Restoring User Please Try Again.", error);
     throw error;
   }
 };

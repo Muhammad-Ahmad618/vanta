@@ -3,6 +3,9 @@ import {
   createWorkspace,
   deleteWorkspace,
   getAllWorkspaces,
+  getWorkspaceById,
+  softDeleteWorkspace,
+  restoreWorkspace,
 } from "@/models/workspace_model.js";
 import {
   getMembersByWorkspaceId,
@@ -78,10 +81,19 @@ export const removeWorkspace = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid ID" });
   }
   try {
-    const workspace = await deleteWorkspace(idNum);
+    const workspace = await getWorkspaceById(idNum);
+    if (!workspace || workspace.deleted_at !== null) {
+      return res.status(404).json({ message: "Workspace Not Found" });
+    }
+
+    if (req.user?.role !== "admin" && workspace.owner_id !== req.user?.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const result = await softDeleteWorkspace(idNum);
     return res
       .status(200)
-      .json({ message: "Workspace deleted successfully", data: workspace });
+      .json({ message: "Workspace deleted successfully", data: result });
   } catch (error) {
     // console.error("Error deleting workspace:", error);
     return res
@@ -90,15 +102,77 @@ export const removeWorkspace = async (req: Request, res: Response) => {
   }
 };
 
-export const fetchWorkspaceMembers = async (req: Request, res: Response) => {
+export const hardDeleteWorkspace = async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
 
   if (isNaN(idNum)) {
     return res.status(400).json({ message: "Invalid ID" });
   }
+
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
   try {
-    const workspaceMembers = await getMembersByWorkspaceId(idNum);
+    const workspace = await deleteWorkspace(idNum);
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace Not Found" });
+    }
+    return res.status(200).json({
+      message: "Workspace hard deleted successfully",
+      data: workspace,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Hard Deleting Workspace. Please Try Again",
+    });
+  }
+};
+
+export const recoverWorkspace = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const idNum = Number(id);
+
+  if (isNaN(idNum)) {
+    return res.status(400).json({ message: "Invalid ID" });
+  }
+
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  try {
+    const workspace = await restoreWorkspace(idNum);
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace Not Found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Workspace restored successfully", data: workspace });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Restoring Workspace. Please Try Again" });
+  }
+};
+
+export const fetchWorkspaceMembers = async (req: Request, res: Response) => {
+  const { id, limit, offset, role } = req.params;
+  const idNum = Number(id);
+  const limitNum = Number(limit) || 10;
+  const offsetNum = Number(offset) || 0;
+  const roleStr = role?.toString() || undefined;
+
+  if (isNaN(idNum)) {
+    return res.status(400).json({ message: "Invalid ID" });
+  }
+  try {
+    const workspaceMembers = await getMembersByWorkspaceId(
+      idNum,
+      limitNum,
+      offsetNum,
+    );
 
     if (workspaceMembers.length === 0) {
       return res
@@ -106,19 +180,15 @@ export const fetchWorkspaceMembers = async (req: Request, res: Response) => {
         .json({ message: "Your Alone No Member Found in Your Workspace" });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Workspace Members Fetched Successfully",
-        data: workspaceMembers,
-      });
+    return res.status(200).json({
+      message: "Workspace Members Fetched Successfully",
+      data: workspaceMembers,
+    });
   } catch (error) {
     // console.error("Error fetching workspace members:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error While Fetching Workspace Members. Please Try Again",
-      });
+    return res.status(500).json({
+      message: "Error While Fetching Workspace Members. Please Try Again",
+    });
   }
 };
 
@@ -136,19 +206,15 @@ export const kickoutWorkspaceMember = async (req: Request, res: Response) => {
     if (!workspaceMember) {
       return res.status(404).json({ message: "Workspace Member Not Found" });
     }
-    return res
-      .status(200)
-      .json({
-        message: "Workspace Member Removed Successfully",
-        data: workspaceMember,
-      });
+    return res.status(200).json({
+      message: "Workspace Member Removed Successfully",
+      data: workspaceMember,
+    });
   } catch (error) {
     // console.error("Error kicking out workspace member:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error While Removing Workspace Member. Please Try Again",
-      });
+    return res.status(500).json({
+      message: "Error While Removing Workspace Member. Please Try Again",
+    });
   }
 };
 
@@ -170,19 +236,15 @@ export const inviteWorkspaceMember = async (req: Request, res: Response) => {
       userId,
       role,
     );
-    return res
-      .status(200)
-      .json({
-        message: "Workspace Member Added Successfully",
-        data: workspaceMember,
-      });
+    return res.status(200).json({
+      message: "Workspace Member Added Successfully",
+      data: workspaceMember,
+    });
   } catch (error) {
     // console.error("Error inviting workspace member:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error While Adding Workspace Member. Please Try Again",
-      });
+    return res.status(500).json({
+      message: "Error While Adding Workspace Member. Please Try Again",
+    });
   }
 };
 
@@ -194,12 +256,10 @@ export const transferOwnership = async (req: Request, res: Response) => {
   const newOwnerId = Number(newOwner_id);
 
   if (isNaN(workspaceId) || isNaN(ownerId) || isNaN(newOwnerId)) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Invalid Workspace ID, Owner ID or New Owner ID Please Try Again.",
-      });
+    return res.status(400).json({
+      message:
+        "Invalid Workspace ID, Owner ID or New Owner ID Please Try Again.",
+    });
   }
 
   try {
@@ -245,12 +305,10 @@ export const leaveWorkspace = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Workspace Member Not Found" });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Workspace Member Left Successfully",
-        data: workspaceMember,
-      });
+    return res.status(200).json({
+      message: "Workspace Member Left Successfully",
+      data: workspaceMember,
+    });
   } catch (error) {
     // console.error("Error leaving workspace:", error);
     return res

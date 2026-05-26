@@ -1,11 +1,15 @@
 import pool from "../db.js";
 
-export const getAllTasks = async (limit: number, offset: number) => {
+export const getAllTasks = async (
+  limit: number,
+  offset: number,
+  status?: string,
+) => {
   try {
-    const result = await pool.query(
-      "SELECT task_id,title,description,status,tasks.created_at,users.name FROM tasks INNER JOIN users ON tasks.user_id = users.id ORDER BY tasks.task_id DESC LIMIT $1 OFFSET $2",
-      [limit, offset],
-    );
+    let query = `
+      SELECT task_id,title,description,status,tasks.created_at,users.username AS name FROM tasks INNER JOIN users ON tasks.user_id = users.id WHERE tasks.deleted_at IS NULL AND ($1::TEXT IS NULL OR status = $1) ORDER BY tasks.task_id DESC LIMIT $2 OFFSET $3
+    `;
+    const result = await pool.query(query, [status ?? null, limit, offset]);
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Tasks Please Try Again.", error);
@@ -34,7 +38,7 @@ export const getTaskByUserId = async (
   try {
     let query = `
       SELECT * FROM tasks
-      WHERE user_id = $1
+      WHERE user_id = $1 AND deleted_at IS NULL
     `;
 
     const values: (number | string)[] = [user_id];
@@ -67,7 +71,7 @@ export const getTaskByAssignedTo = async (
   try {
     let query = `
       SELECT * FROM tasks
-      WHERE assigned_to = $1
+      WHERE assigned_to = $1 AND deleted_at IS NULL
     `;
 
     const values: (number | string)[] = [assigned_to];
@@ -131,15 +135,41 @@ export const updateTask = async (
   }
 };
 
-export const deleteTask = async (id: number, user_id: number) => {
+export const hardDeleteTask = async (id: number) => {
   try {
     const result = await pool.query(
-      "DELETE FROM tasks WHERE task_id = $1 AND user_id = $2 RETURNING*",
-      [id, user_id],
+      "DELETE FROM tasks WHERE task_id = $1 RETURNING*",
+      [id],
     );
     return result.rows[0];
   } catch (error) {
-    console.log("Error Deleting Task Please Try Again.", error);
+    console.log("Error Hard Deleting Task Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const softDeleteTask = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE tasks SET deleted_at = NOW() WHERE task_id = $1 RETURNING*",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Soft Deleting Task Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const restoreTask = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE tasks SET deleted_at = NULL WHERE task_id = $1 RETURNING*",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Restoring Task Please Try Again.", error);
     throw error;
   }
 };

@@ -13,7 +13,7 @@ export const login = async (req: Request, res: Response) => {
 
   const user = await getUserByEmail(email);
 
-  if (!user) {
+  if (!user || user.deleted_at !== null) {
     return res.status(404).json({ message: "User not found" });
   }
 
@@ -52,6 +52,11 @@ export const register = async (req: Request, res: Response) => {
   const existingUser = await getUserByEmail(email);
 
   if (existingUser) {
+    if (existingUser.deleted_at !== null) {
+      return res
+        .status(400)
+        .json({ message: "Account is deactivated. Please contact support or restore it." });
+    }
     return res
       .status(400)
       .json({ message: "account already register on this mail" });

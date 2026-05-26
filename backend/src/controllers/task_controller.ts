@@ -1,23 +1,26 @@
 import { Request, Response } from "express";
-import { getErrorMessage } from "@/utils/error_handler.js";
 import {
   changeTaskStatus,
   createTask,
-  deleteTask,
+  hardDeleteTask,
   getAllTasks,
   getTaskByAssignedTo,
   getTaskByUserId,
   updateTask,
+  getTaskById,
+  softDeleteTask,
+  restoreTask,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
 export const fetchAllTasks = async (req: Request, res: Response) => {
-  const { limit, offset } = req.query;
+  const { limit, offset, status } = req.query;
   const limitNum = limit ? Number(limit) : 10;
   const offsetNum = offset ? Number(offset) : 0;
+  const statusVal = (status as "pending" | "Inprogress" | "completed") || null;
 
   try {
-    const tasks = await getAllTasks(limitNum, offsetNum);
+    const tasks = await getAllTasks(limitNum, offsetNum, statusVal);
 
     if (tasks.length === 0) {
       return res.status(404).json({ message: "No tasks found" });
@@ -27,7 +30,9 @@ export const fetchAllTasks = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: "Error Occured while Fetching Task Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Error Occured while Fetching Task Please Try Again" });
   }
 };
 
@@ -48,7 +53,9 @@ export const fetchTasksByCreatorId = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error Please Try Again" });
   }
 };
 
@@ -79,7 +86,9 @@ export const AddNewTask = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task created successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: "Error While Creating Task Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Error While Creating Task Please Try Again" });
   }
 };
 
@@ -117,7 +126,9 @@ export const updateTaskDetails = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task updated successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: "Error While Updating Task Details Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Error While Updating Task Details Please Try Again" });
   }
 };
 
@@ -148,7 +159,9 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Task status changed successfully", data: task });
   } catch (error) {
-    return res.status(500).json({ message: "Error While Updating Task Status Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Error While Updating Task Status Please Try Again" });
   }
 };
 
@@ -167,12 +180,79 @@ export const removeTask = async (req: Request, res: Response) => {
   }
 
   try {
-    const task = await deleteTask(id, user_id);
+    const task = await getTaskById(id);
+    if (!task || task.deleted_at !== null) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    if (req.user?.role !== "admin" && task.user_id !== user_id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const result = await softDeleteTask(id);
     return res
       .status(200)
-      .json({ message: "Task deleted successfully", data: task });
+      .json({ message: "Task deleted successfully", data: result });
   } catch (error) {
-    return res.status(500).json({ message: "Error While Deleting Task Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Error While Deleting Task Please Try Again" });
+  }
+};
+
+export const hardDeleteTaskController = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please provide task id",
+    });
+  }
+
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  try {
+    const task = await hardDeleteTask(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Task hard deleted successfully", data: task });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Hard Deleting Task Please Try Again" });
+  }
+};
+
+export const recoverTask = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please provide task id",
+    });
+  }
+
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  try {
+    const task = await restoreTask(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Task restored successfully", data: task });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Restoring Task Please Try Again" });
   }
 };
 
@@ -202,6 +282,8 @@ export const fetchAssignedTasks = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "Tasks fetched successfully", data: tasks });
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error Please Try Again" });
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error Please Try Again" });
   }
 };

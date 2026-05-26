@@ -3,7 +3,7 @@ import pool from "../db.js";
 export const getAllWorkspaces = async (limit: number, offset: number) => {
   try {
     const result = await pool.query(
-      "SELECT workspace.id,workspace.name,workspace.created_at,users.name AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id ORDER BY workspace.id DESC LIMIT $1 OFFSET $2",
+      "SELECT workspace.id,workspace.name,workspace.created_at,users.username AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id WHERE workspace.deleted_at IS NULL ORDER BY workspace.id DESC LIMIT $1 OFFSET $2",
       [limit, offset],
     );
     return result.rows;
@@ -59,12 +59,38 @@ export const deleteWorkspace = async (id: number) => {
 export const getWorkspaceById = async (id: number) => {
   try {
     const result = await pool.query(
-      "SELECT workspace.name AS workspace_name, workspace.created_at, users.name AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id WHERE workspace.id = $1",
+      "SELECT workspace.id, workspace.name AS workspace_name, workspace.owner_id, workspace.created_at, workspace.deleted_at, users.username AS owner_name FROM workspace INNER JOIN users ON workspace.owner_id = users.id WHERE workspace.id = $1",
       [id],
     );
     return result.rows[0];
   } catch (error) {
     console.log("Error Fetching Workspace Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const softDeleteWorkspace = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE workspace SET deleted_at = NOW() WHERE id = $1 RETURNING*",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Soft Deleting Workspace Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const restoreWorkspace = async (id: number) => {
+  try {
+    const result = await pool.query(
+      "UPDATE workspace SET deleted_at = NULL WHERE id = $1 RETURNING*",
+      [id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Restoring Workspace Please Try Again.", error);
     throw error;
   }
 };
