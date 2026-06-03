@@ -115,13 +115,13 @@ export const updateUserPassword = async (req: Request, res: Response) => {
 
   const isPasswordValid = await bcrypt.compare(password, existingPassword);
 
-  if (!isPasswordValid) {
+  if (isPasswordValid) {
     return res
-      .status(401)
+      .status(400)
       .json({ message: "New and Current Password cannot be the same" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 20);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     const user = await updatePassword(Number(id), hashedPassword);

@@ -30,3 +30,22 @@ export const registerValidator = [
     .isLength({ min: 4 })
     .withMessage("name is too short"),
 ];
+
+export const forgotPasswordValidator = [
+  body("email")
+    .notEmpty()
+    .withMessage("email is required")
+    .isEmail()
+    .withMessage("email is invalid"),
+];
+
+export const resetPasswordValidator = [
+  body("token")
+    .notEmpty()
+    .withMessage("token is required"),
+  body("newPassword")
+    .notEmpty()
+    .withMessage("newPassword is required")
+    .isLength({ min: 6 })
+    .withMessage("password is too short"),
+];
