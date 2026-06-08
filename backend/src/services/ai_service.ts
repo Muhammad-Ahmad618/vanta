@@ -28,9 +28,9 @@ export const generateDailyFocus = async (tasks: task[]): Promise<string> => {
     
     The User has the following pending or In-progress due today or overdue:${taskList}
     
-    Generate a focus daily breifing for the user and include:
+    Generate a focused daily briefing for the user and include:
     - A one sentence motivational opener (keep it short genuine, not cheesy)
-    - A prioritized list of what they should they focus on today and why
+    - A prioritized list of what they should focus on today and why
     - A short closing note if any tasks are overdue
 
     Keep the tone professional and friendly. Be concise and actionable.`;
