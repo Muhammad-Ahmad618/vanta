@@ -9,6 +9,7 @@ import {
   fetchAssignedTasks,
   hardDeleteTaskController,
   recoverTask,
+  getDailyFocus,
 } from "../controllers/task_controller.js";
 import { protect } from "@/middleware/authentication.js";
 import { authorize } from "@/middleware/authorization.js";
@@ -20,9 +21,15 @@ router.post("/task", protect, AddNewTask);
 router.put("/task/:id", protect, updateTaskDetails);
 router.patch("/task/:id/status", protect, updateTaskStatus);
 router.delete("/task/:id", protect, removeTask);
-router.delete("/task/:id/hard", protect, authorize("admin"), hardDeleteTaskController);
+router.delete(
+  "/task/:id/hard",
+  protect,
+  authorize("admin"),
+  hardDeleteTaskController,
+);
 router.post("/task/recover/:id", protect, authorize("admin"), recoverTask);
 router.get("/task/creator/:id", protect, fetchTasksByCreatorId);
 router.get("/task/assigned/:id", protect, fetchAssignedTasks);
+router.get("/task/focus", protect, getDailyFocus);
 
 export default router;

@@ -88,15 +88,24 @@ export const getTaskByAssignedTo = async (
 export const createTask = async (
   title: string,
   description: string,
+  priority: "low" | "medium" | "high",
+  due_date: Date,
   user_id: number,
   workspace_id?: number,
   assigned_to?: number,
-  category?: string,
 ) => {
   try {
     const result = await pool.query(
-      "INSERT INTO tasks(title,description,user_id,workspace_id,assigned_to,category) VALUES ($1,$2,$3,$4,$5,$6) RETURNING*",
-      [title, description, user_id, workspace_id, assigned_to, category],
+      "INSERT INTO tasks(title,description,user_id,workspace_id,assigned_to,priority,due_date) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING*",
+      [
+        title,
+        description,
+        user_id,
+        workspace_id,
+        assigned_to,
+        priority,
+        due_date,
+      ],
     );
     return result.rows[0];
   } catch (error) {
@@ -111,12 +120,23 @@ export const updateTask = async (
   title: string,
   description: string,
   status: "pending" | "Inprogress" | "completed",
+  priority: "low" | "medium" | "high",
+  due_date: Date,
   assigned_to?: number,
 ) => {
   try {
     const result = await pool.query(
-      "UPDATE tasks SET title = $1, description = $2, status = $3, assigned_to = $4 WHERE task_id = $5 AND user_id = $6 RETURNING*",
-      [title, description, status, assigned_to ?? null, id, user_id],
+      "UPDATE tasks SET title = $1, description = $2, status = $3, priority = $4, due_date = $5, assigned_to = $6 WHERE task_id = $7 AND user_id = $8 RETURNING*",
+      [
+        title,
+        description,
+        status,
+        priority,
+        due_date,
+        assigned_to ?? null,
+        id,
+        user_id,
+      ],
     );
     return result.rows[0];
   } catch (error) {
@@ -177,6 +197,28 @@ export const changeTaskStatus = async (
     return result.rows[0];
   } catch (error) {
     console.log("Error Changing Task Status Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const getDailyFocusTasks = async (user_id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT task_id, title, description, priority, due_date, status
+     FROM tasks 
+     WHERE (user_id = $1 OR assigned_to = $1)
+     AND deleted_at is NULL
+     AND status IN ('pending', 'Inprogress')
+     AND due_date <= CURRENT_DATE += INTERVAL '1 day'
+     ORDER BY
+     CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+     due_date ASC`,
+      [user_id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.log("Error Fetching Daily Focus Tasks Please Try Again.", error);
     throw error;
   }
 };

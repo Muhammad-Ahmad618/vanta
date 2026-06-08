@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { generateDailyFocus } from "@/services/ai_service.js";
 import {
   changeTaskStatus,
   createTask,
@@ -10,6 +11,7 @@ import {
   getTaskById,
   softDeleteTask,
   restoreTask,
+  getDailyFocusTasks,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
@@ -60,12 +62,13 @@ export const fetchTasksByCreatorId = async (req: Request, res: Response) => {
 };
 
 export const AddNewTask = async (req: Request, res: Response) => {
-  const { title, description, workspace_id, assigned_to, category } = req.body;
+  const { title, description, workspace_id, assigned_to, priority, due_date } =
+    req.body;
   const user_id = Number(req.user?.id);
 
-  if (!title || !description) {
+  if (!title || !description || !priority || !due_date) {
     return res.status(400).json({
-      message: "Please provide title and description",
+      message: "Please provide title and description and priority and due date",
     });
   }
 
@@ -77,10 +80,11 @@ export const AddNewTask = async (req: Request, res: Response) => {
     const task = await createTask(
       title,
       description,
+      priority,
+      due_date,
       user_id,
       workspace_id,
       assigned_to,
-      category,
     );
     return res
       .status(200)
@@ -93,11 +97,12 @@ export const AddNewTask = async (req: Request, res: Response) => {
 };
 
 export const updateTaskDetails = async (req: Request, res: Response) => {
-  const { title, description, status, assigned_to } = req.body;
+  const { title, description, status, assigned_to, priority, due_date } =
+    req.body;
   const id = Number(req.params.id);
   const user_id = Number(req.user?.id);
 
-  if (!title || !description || !status) {
+  if (!title || !description || !status || !priority || !due_date) {
     return res.status(400).json({
       message: "Please provide title, description and status",
     });
@@ -121,6 +126,8 @@ export const updateTaskDetails = async (req: Request, res: Response) => {
       description,
       status,
       assigned_to,
+      priority,
+      due_date,
     );
     return res
       .status(200)
@@ -285,5 +292,28 @@ export const fetchAssignedTasks = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Internal Server Error Please Try Again" });
+  }
+};
+
+export const getDailyFocus = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const tasks = await getDailyFocusTasks(user_id);
+    const focus = await generateDailyFocus(tasks);
+
+    return res.status(200).json({
+      message: "Daily focus generated successfully",
+      task_analyzed: tasks.length,
+      data: focus,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Generating Daily Focus Please Try Again" });
   }
 };
