@@ -47,10 +47,10 @@ export const getAllUsers = async (
     query += " ORDER BY created_at DESC";
 
     values.push(limit);
-    query += `LIMIT $${values.length} `;
+    query += ` LIMIT $${values.length} `;
 
     values.push(offset);
-    query += `OFFSET $${values.length}`;
+    query += ` OFFSET $${values.length}`;
 
     const result = await pool.query(query, values);
     return result.rows;

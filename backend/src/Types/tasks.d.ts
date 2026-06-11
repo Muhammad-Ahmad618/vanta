@@ -6,3 +6,16 @@ export interface task {
   due_date: Date;
   status: "pending" | "Inprogress" | "completed";
 }
+
+export interface taskbreakDownProps {
+  title: string;
+  description: string;
+  priority: "low" | "medium" | "high";
+}
+
+export interface taskRiskReport {
+  high_risk: task[];
+  medium_risk: task[];
+  ontrack: task[];
+  assessment: string;
+}

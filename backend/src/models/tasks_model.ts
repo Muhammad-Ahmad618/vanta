@@ -222,3 +222,49 @@ export const getDailyFocusTasks = async (user_id: number) => {
     throw error;
   }
 };
+
+export const getTaskBreakDown = async (task_id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT task_id, title, description, priority FROM tasks WHERE task_id = $1 AND deleted_at IS NULL`,
+      [task_id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Fetching Task Breakdown Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const saveSubTasks = async (
+  subtasks: {
+    title: string;
+    description: string;
+    priority: "low" | "medium" | "high";
+    due_date: Date;
+  }[],
+  parent_task_id: number,
+  user_id: number,
+) => {
+  try {
+    const inserted = [];
+    for (const subtask of subtasks) {
+      const result = await pool.query(
+        `INSERT INTO tasks(title,description,priority,due_date,user_id,parent_task_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING*`,
+        [
+          subtask.title,
+          subtask.description,
+          subtask.priority,
+          subtask.due_date,
+          user_id,
+          parent_task_id,
+        ],
+      );
+      inserted.push(result.rows[0]);
+    }
+    return inserted;
+  } catch (error) {
+    console.log("Error Saving Sub Tasks Please Try Again.", error);
+    throw error;
+  }
+};

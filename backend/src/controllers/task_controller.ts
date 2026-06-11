@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
-import { generateDailyFocus } from "@/services/ai_service.js";
+import {
+  generateDailyFocus,
+  generateTaskBreakDown,
+} from "@/services/ai_service.js";
 import {
   changeTaskStatus,
   createTask,
@@ -12,6 +15,8 @@ import {
   softDeleteTask,
   restoreTask,
   getDailyFocusTasks,
+  saveSubTasks,
+  getTaskBreakDown,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
@@ -315,5 +320,94 @@ export const getDailyFocus = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error While Generating Daily Focus Please Try Again" });
+  }
+};
+
+export const breakdownTask = async (req: Request, res: Response) => {
+  const task_id = Number(req.params.id);
+  const user_id = Number(req.user?.id);
+
+  if (!task_id) {
+    return res.status(400).json({
+      message: "Please provide task id",
+    });
+  }
+
+  if (!user_id) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+
+  try {
+    const task = await getTaskBreakDown(task_id);
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+        data: null,
+      });
+    }
+
+    const subtask = await generateTaskBreakDown(task.title, task.description);
+
+    if (subtask.length === 0) {
+      return res.status(400).json({
+        message: "This task is already small enough, no breakdown needed",
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      message: "Task breakdown generated successfully",
+      data: subtask,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Generating Task Breakdown Please Try Again",
+    });
+  }
+};
+
+export const saveTaskBreakdown = async (req: Request, res: Response) => {
+  const task_id = Number(req.params.id);
+  const user_id = Number(req.user?.id);
+
+  const { subtasks } = req.body;
+
+  if (!task_id) {
+    return res.status(400).json({
+      message: "Please provide task id",
+    });
+  }
+
+  if (!user_id) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+
+  if (!subtasks || subtasks.length === 0 || !Array.isArray(subtasks)) {
+    return res.status(400).json({
+      message: "Please provide subtasks to save",
+    });
+  }
+
+  try {
+    const parent = await getTaskBreakDown(task_id);
+    if (!parent) {
+      return res.status(404).json({
+        message: "Parent Task not found",
+      });
+    }
+
+    const saved = await saveSubTasks(subtasks, task_id, user_id);
+
+    return res.status(201).json({
+      message: `${saved.length} subtasks created successfully`,
+      data: saved,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Saving Subtask Please Try Again" });
   }
 };

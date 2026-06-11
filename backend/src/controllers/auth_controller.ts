@@ -53,7 +53,6 @@ export const login = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "User logged in successfully",
       token,
-      data: user,
     });
   } catch (error) {
     return res
@@ -100,7 +99,7 @@ export const register = async (req: Request, res: Response) => {
       .json({ message: "Internal server error. Please try again." });
   }
 };
-
+// forgot password
 export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
@@ -130,7 +129,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
         html: `
         <h2>Password Reset</h2>
         <p>Click the link below to reset your password. It expires in 1 hour.</p>
-        <a href="${resetUrl}">Reset Password</a>
+        <a href="${resetUrl}" style="color: blue; text-decoration: underline;">Reset Password</a>
         <p>If you didn't request this, ignore this email.</p>
       `,
       });
@@ -147,6 +146,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+// reset password
 export const resetPassword = async (req: Request, res: Response) => {
   const { token, newPassword } = req.body;
 
