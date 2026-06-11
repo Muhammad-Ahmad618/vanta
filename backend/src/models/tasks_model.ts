@@ -268,3 +268,23 @@ export const saveSubTasks = async (
     throw error;
   }
 };
+
+export const getActiveTasksById = async (user_id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT task_id, title, description, priority, status, due_date 
+      FROM tasks
+      WHERE (user_id = $1 OR assigned_to = $1)
+      AND deleted_at IS NULL
+      AND status IN ('pending', 'Inprogress')
+      ORDER BY due_date ASC
+      `,
+      [user_id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.log("Error Fetching Active Tasks Please Try Again.", error);
+    throw error;
+  }
+};

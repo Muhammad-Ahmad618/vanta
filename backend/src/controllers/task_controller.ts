@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   generateDailyFocus,
   generateTaskBreakDown,
+  generateRiskReport,
 } from "@/services/ai_service.js";
 import {
   changeTaskStatus,
@@ -17,6 +18,7 @@ import {
   getDailyFocusTasks,
   saveSubTasks,
   getTaskBreakDown,
+  getActiveTasksById,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
@@ -409,5 +411,30 @@ export const saveTaskBreakdown = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error While Saving Subtask Please Try Again" });
+  }
+};
+
+export const getRiskReport = async (req: Request, res: Response) => {
+  const user_id = req.user?.id;
+
+  if (!user_id) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+
+  try {
+    const tasks = await getActiveTasksById(user_id);
+    const riskReport = await generateRiskReport(tasks);
+
+    return res.status(200).json({
+      message: "Risk report generated successfully",
+      task_analyzed: tasks.length,
+      data: riskReport,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error While Generating Risk Report Please Try Again" });
   }
 };
