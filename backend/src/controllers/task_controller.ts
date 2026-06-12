@@ -132,9 +132,9 @@ export const updateTaskDetails = async (req: Request, res: Response) => {
       title,
       description,
       status,
-      assigned_to,
       priority,
       due_date,
+      assigned_to,
     );
     return res
       .status(200)
@@ -223,9 +223,9 @@ export const hardDeleteTaskController = async (req: Request, res: Response) => {
     });
   }
 
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Forbidden" });
-  }
+  // if (req.user?.role !== "admin") {
+  //   return res.status(403).json({ message: "Forbidden" });
+  // }
 
   try {
     const task = await hardDeleteTask(id);
@@ -251,9 +251,9 @@ export const recoverTask = async (req: Request, res: Response) => {
     });
   }
 
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Forbidden" });
-  }
+  // if (req.user?.role !== "admin") {
+  //   return res.status(403).json({ message: "Forbidden" });
+  // }
 
   try {
     const task = await restoreTask(id);

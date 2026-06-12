@@ -24,15 +24,10 @@ router.post("/task", protect, AddNewTask);
 router.put("/task/:id", protect, updateTaskDetails);
 router.patch("/task/:id/status", protect, updateTaskStatus);
 router.delete("/task/:id", protect, removeTask);
-router.delete(
-  "/task/:id/hard",
-  protect,
-  authorize("admin"),
-  hardDeleteTaskController,
-);
-router.post("/task/recover/:id", protect, authorize("admin"), recoverTask);
+router.delete("/task/:id/hard", protect, hardDeleteTaskController);
+router.post("/task/recover/:id", protect, recoverTask);
 router.get("/task/creator/:id", protect, fetchTasksByCreatorId);
-router.get("/task/assigned/:id", protect, fetchAssignedTasks);
+router.get("/task/assigned/:id", protect, fetchAssignedTasks); // not tested yet
 
 // Daily Focus
 router.get("/task/focus", protect, getDailyFocus);

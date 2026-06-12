@@ -117,11 +117,11 @@ export const createTask = async (
 export const updateTask = async (
   id: number,
   user_id: number,
-  title: string,
-  description: string,
-  status: "pending" | "Inprogress" | "completed",
-  priority: "low" | "medium" | "high",
-  due_date: Date,
+  title?: string,
+  description?: string,
+  status?: "pending" | "Inprogress" | "completed",
+  priority?: "low" | "medium" | "high",
+  due_date?: Date,
   assigned_to?: number,
 ) => {
   try {
