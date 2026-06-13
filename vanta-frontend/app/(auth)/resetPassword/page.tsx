@@ -1,13 +1,13 @@
-import ForgotPasswordFrom from "@/components/features/auth/forgotPasswordFrom";
+import ResetPasswordFrom from "@/components/features/auth/resetPasswordForm";
 
-function ForgotPasswordPage() {
+function ResetPasswordpage() {
   return (
     <div className="flex h-screen justify-center items-center p-4">
       <div className="p-10 border rounded-2xl max-w-[500px] w-full">
-        <ForgotPasswordFrom />
+        <ResetPasswordFrom />
       </div>
     </div>
   );
 }
 
-export default ForgotPasswordPage;
+export default ResetPasswordpage;
