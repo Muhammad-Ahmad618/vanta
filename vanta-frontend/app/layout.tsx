@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono, DM_Sans } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,10 @@ export default function RootLayout({
         jetbrainsMono.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Toaster />
+        {children}
+      </body>
     </html>
   );
 }

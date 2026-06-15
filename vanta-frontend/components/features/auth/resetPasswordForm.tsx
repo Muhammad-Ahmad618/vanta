@@ -3,10 +3,26 @@
 import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/shared/formHeader";
 import { AppInputField } from "@/components/custom/appInputField";
+import { useFormik } from "formik";
+import { resetPassword } from "@/schemas/authSchema";
+import { Lock } from "lucide-react";
+import { toast } from "sonner";
 
 function ResetPasswordForm() {
+  const formik = useFormik({
+    initialValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: resetPassword,
+    onSubmit: (values) => {
+      console.log(values);
+      toast.success("Password reset Successful!");
+    },
+  });
+
   return (
-    <div className="w-full">
+    <div className="w-full p-10 border rounded-2xl">
       {/* Brand Header */}
       <FormHeader
         title="Reset Password"
@@ -14,17 +30,36 @@ function ResetPasswordForm() {
       />
 
       {/* Reset Password Form */}
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+      <form onSubmit={formik.handleSubmit} className="space-y-5">
         <AppInputField
           type="password"
           id="password"
           placeholder="Password"
+          leftIcon={
+            <Lock className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
+          }
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.password ? formik.errors.password : undefined}
           required
         />
         <AppInputField
           type="password"
           id="confirmPassword"
           placeholder="Confirm Password"
+          className="text-[14px]"
+          leftIcon={
+            <Lock className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
+          }
+          value={formik.values.confirmPassword}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={
+            formik.touched.confirmPassword
+              ? formik.errors.confirmPassword
+              : undefined
+          }
           required
         />
 

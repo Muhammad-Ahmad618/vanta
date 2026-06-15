@@ -53,7 +53,7 @@ export function AppInputField({
 
       <div
         className={cn(
-          "flex items-center gap-2 border border-gray-300 dark:border-gray-800 rounded-md px-3 bg-white dark:bg-zinc-950 transition-all duration-200 focus-within:ring-2 focus-within:ring-ring/20 focus-within:border-ring",
+          "flex items-center gap-2 border border-gray-300 dark:border-gray-800 rounded-md px-3 bg-white dark:bg-zinc-950 transition-all duration-200 focus-within:ring-2 focus-within:ring-ring/20 focus-within:border-ring ",
           error && "border-destructive focus-within:border-destructive",
           props.disabled &&
             "opacity-50 bg-gray-50 dark:bg-zinc-900 cursor-not-allowed",
@@ -69,7 +69,7 @@ export function AppInputField({
           id={inputId}
           type={isPassword && showPassword ? "text" : type}
           className={cn(
-            "border-none bg-transparent h-10 w-full p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus-visible:border-none aria-invalid:border-none aria-invalid:ring-0 dark:aria-invalid:border-none dark:aria-invalid:ring-0",
+            "text-[13px]! border-none bg-transparent h-10 w-full p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus-visible:border-none aria-invalid:border-none aria-invalid:ring-0 dark:aria-invalid:border-none dark:aria-invalid:ring-0",
             className,
           )}
           aria-invalid={!!error}

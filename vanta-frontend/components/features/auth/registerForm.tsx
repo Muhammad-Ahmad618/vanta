@@ -5,10 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Mail, User, Lock } from "lucide-react";
 import Link from "next/link";
 import FormHeader from "@/components/shared/formHeader";
+import { useFormik } from "formik";
+import { signupSchema } from "@/schemas/authSchema";
+import { toast } from "sonner";
 
 export function RegisterForm() {
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: signupSchema,
+    onSubmit: (values) => {
+      console.log(values);
+      toast.success("Account Created Successfully!");
+    },
+  });
+
   return (
-    <div className="w-full">
+    <div className="py-5 px-10 border rounded-2xl w-full">
       {/* Brand Header */}
       <FormHeader
         title="Get Started"
@@ -16,12 +33,16 @@ export function RegisterForm() {
       />
 
       {/* Main Form */}
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+      <form onSubmit={formik.handleSubmit} className="space-y-5">
         <AppInputField
           label="Full Name"
           type="text"
           id="name"
           placeholder="John Doe"
+          value={formik.values.name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.name ? formik.errors.name : undefined}
           leftIcon={
             <User className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
           }
@@ -33,6 +54,10 @@ export function RegisterForm() {
           type="email"
           id="email"
           placeholder="name@example.com"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.email ? formik.errors.email : undefined}
           leftIcon={
             <Mail className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
           }
@@ -45,6 +70,10 @@ export function RegisterForm() {
             type="password"
             id="password"
             placeholder="••••••••"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.password ? formik.errors.password : undefined}
             leftIcon={
               <Lock className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
             }
@@ -56,8 +85,16 @@ export function RegisterForm() {
           <AppInputField
             label="Confirm Password"
             type="password"
-            id="confirm-password"
+            id="confirmPassword"
             placeholder="••••••••"
+            value={formik.values.confirmPassword}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={
+              formik.touched.confirmPassword
+                ? formik.errors.confirmPassword
+                : undefined
+            }
             leftIcon={
               <Lock className="text-zinc-400 dark:text-zinc-500 w-4 h-4" />
             }

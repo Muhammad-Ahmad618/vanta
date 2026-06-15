@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import FormHeader from "@/components/shared/formHeader";
-import { loginSchema } from "@/schemas/auth/loginSchema";
+import { loginSchema } from "@/schemas/authSchema";
 import { useFormik } from "formik";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const formik = useFormik({
@@ -17,11 +18,12 @@ export function LoginForm() {
     validationSchema: loginSchema,
     onSubmit: (values) => {
       console.log(values);
+      toast.success("Logged in Successfully");
     },
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full p-10 border rounded-2xl">
       {/* Brand Header */}
       <FormHeader
         title="Welcome to Vanta"
