@@ -1,11 +1,26 @@
+import { AppSidebar } from "@/components/custom/app-sidebar";
+import { SiteHeader } from "@/components/custom/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
 export default function ProtectedLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <div className="protected-layout">
-      {children}
-    </div>
-  )
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="protected-layout">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
