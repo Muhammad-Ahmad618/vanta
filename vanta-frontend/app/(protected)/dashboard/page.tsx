@@ -1,12 +1,10 @@
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
-
-import data from "./data.json";
+import { ChartAreaInteractive } from "@/components/features/dashboard/taskCompletionChaart";
+import { SectionCards } from "@/components/features/dashboard/statsCards";
+import { RecentTaskTable } from "@/components/features/dashboard/recentTaskTable";
 
 const statsData = [
   {
-    title: "Total Active Tasks",
+    title: "Total Tasks",
     description: "",
     value: "5",
     trend: "0%",
@@ -44,24 +42,30 @@ export default function Page() {
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <div className="p-4 lg:p-6 mx-6 rounded-xl border border-zinc-300">
+            <h2 className="text-base font-bold">Today&apos;s Focus</h2>
+            <p className="text-zinc-500 text-xs lg:text-sm">
+              No Task Found to Generate Focus
+            </p>
+          </div>
           <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
-            {statsData?.map((stats, index) => {
-              return (
-                <SectionCards
-                  key={index}
-                  title={stats?.title || "Title"}
-                  value={stats?.value || "N/A"}
-                  trend={stats?.trend || "0"}
-                  trendDirection={stats?.trendDirection}
-                  footerText={stats?.footerText || "something went wrong"}
-                />
-              );
-            })}
+            {statsData?.map((stats, index) => (
+              <SectionCards
+                key={index}
+                title={stats?.title || "Title"}
+                value={stats?.value || "N/A"}
+                trend={stats?.trend || "0"}
+                trendDirection={stats?.trendDirection}
+                footerText={stats?.footerText || "something went wrong"}
+              />
+            ))}
           </div>
           <div className="px-4 lg:px-6">
             <ChartAreaInteractive />
           </div>
-          <DataTable data={data} />
+          <div className="px-4 lg:px-6">
+            <RecentTaskTable />
+          </div>
         </div>
       </div>
     </div>

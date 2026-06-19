@@ -3,11 +3,9 @@
 import * as React from "react";
 
 import { NavMain } from "@/components/custom/nav-main";
-import { NavUser } from "@/components/custom/nav-user";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -36,22 +34,22 @@ const data = {
     },
     {
       title: "Tasks",
-      url: "#",
+      url: "/tasks",
       icon: <Clipboard />,
     },
     {
       title: "Workspace",
-      url: "#",
+      url: "/workspace",
       icon: <Folder />,
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: <Settings />,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/get-help",
       icon: <CircleQuestionMark />,
     },
   ],
