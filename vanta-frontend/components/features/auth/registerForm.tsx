@@ -105,18 +105,19 @@ export function RegisterForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-10 rounded-md font-semibold text-sm transition-all duration-200 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-50 dark:hover:bg-zinc-200 dark:text-zinc-900 mt-2 shadow-sm cursor-pointer"
+          variant="default"
+          className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
         >
           Create Account
         </Button>
       </form>
 
       {/* Bottom links */}
-      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-8">
+      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-5">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-zinc-950 font-semibold hover:underline dark:text-zinc-50"
+          className="text-primary font-semibold hover:underline dark:text-zinc-50"
         >
           Sign in
         </Link>

@@ -66,16 +66,16 @@ export function LoginForm() {
 
         {/* Options Row */}
         <div className="flex items-center justify-between text-xs pt-1">
-          <label className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
+          <label className="flex items-center gap-2 text-muted-foreground cursor-pointer select-none">
             <input
               type="checkbox"
-              className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-50 w-3.5 h-3.5"
+              className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5"
             />
             <span>Remember me</span>
           </label>
           <Link
             href="/forgotPassword"
-            className="text-zinc-900 hover:underline font-medium dark:text-zinc-300"
+            className="text-secondary hover:underline font-medium"
           >
             Forgot password?
           </Link>
@@ -84,7 +84,8 @@ export function LoginForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-10 rounded-md font-semibold text-sm transition-all duration-200 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-50 dark:hover:bg-zinc-200 dark:text-zinc-900 mt-2 shadow-sm cursor-pointer"
+          variant="default"
+          className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
           disabled={formik.isSubmitting}
         >
           {formik.isSubmitting ? "Signing In..." : "Sign In"}
@@ -92,11 +93,11 @@ export function LoginForm() {
       </form>
 
       {/* Bottom links */}
-      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-8">
+      <p className="text-center text-xs text-muted-foreground mt-8">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="text-zinc-950 font-semibold hover:underline dark:text-zinc-50"
+          className="text-primary font-semibold hover:underline"
         >
           Sign up
         </Link>
