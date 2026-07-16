@@ -17,24 +17,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-type Priority = "High" | "Medium" | "Low";
-type Status = "Pending" | "In Process" | "Done";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: Priority;
-  dueDate: string;
-  assignee?: string;
-  status: Status;
-  workspace?: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { Task } from "@/types/Task";
+import { StatusLabel } from "@/components/custom/status-label";
 
 const tasks: Task[] = [
   {
-    id: "task-1",
+    id: "T-1",
     title: "Payment Gateway Integration",
     description: "Integrate Stripe payment gateway",
     priority: "High",
@@ -44,7 +33,7 @@ const tasks: Task[] = [
     workspace: "Workspace 1",
   },
   {
-    id: "task-2",
+    id: "T-2",
     title: "User Authentication Bugfix",
     description: "Fix user authentication bug",
     priority: "Medium",
@@ -54,7 +43,7 @@ const tasks: Task[] = [
     workspace: "Workspace 2",
   },
   {
-    id: "task-3",
+    id: "T-3",
     title: "Executive Summary Narrative",
     description: "Write executive summary",
     priority: "High",
@@ -63,7 +52,7 @@ const tasks: Task[] = [
     status: "Done",
   },
   {
-    id: "task-4",
+    id: "T-4",
     title: "Design System Implementation",
     description: "Implement design system",
     priority: "Low",
@@ -72,7 +61,7 @@ const tasks: Task[] = [
     workspace: "Workspace 2",
   },
   {
-    id: "task-5",
+    id: "T-5",
     title: "Compliance Documentation",
     description: "Write compliance documentation",
     priority: "Medium",
@@ -83,6 +72,7 @@ const tasks: Task[] = [
 ];
 
 const columns = [
+  "id",
   "Title",
   "Description",
   "Priority",
@@ -103,13 +93,29 @@ interface TaskRowProps {
 function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
   return (
     <TableRow className="hover:bg-muted/20">
+      <TableCell className="py-3 px-5">{task?.id}</TableCell>
       <TableCell className="py-3 px-5">{task.title}</TableCell>
       <TableCell className="py-3 px-5">{task.description || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task.priority}</TableCell>
-      <TableCell className="py-3 px-5">{task.assignee || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task.workspace || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task.dueDate}</TableCell>
-      <TableCell className="py-3 px-5">{task.status}</TableCell>
+      <TableCell className="py-3 px-5">
+        <Badge
+          variant={
+            task.priority === "High"
+              ? "destructive"
+              : task.priority === "Medium"
+                ? "default"
+                : "secondary"
+          }
+          className="rounded-md"
+        >
+          {task?.priority}
+        </Badge>
+      </TableCell>
+      <TableCell className="py-3 px-5">{task?.assignee || "-"}</TableCell>
+      <TableCell className="py-3 px-5">{task?.workspace || "-"}</TableCell>
+      <TableCell className="py-3 px-5">{task?.dueDate}</TableCell>
+      <TableCell className="py-3 px-5">
+        <StatusLabel status={task.status} />
+      </TableCell>
       <TableCell className="py-3 px-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -153,7 +159,7 @@ export function TaskTable({
         <TableHeader className="bg-muted/40">
           <TableRow className="hover:bg-transparent">
             {columns.map((col) => (
-              <TableHead key={col} className="p-5">
+              <TableHead key={col} className="p-5 font-semibold">
                 {col}
               </TableHead>
             ))}

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EllipsisVertical, CheckCircle2, CircleDot, Clock } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,42 +17,47 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StatusLabel } from "@/components/custom/status-label";
+import { Task } from "@/types/Task";
 
-const tasks = [
+const tasks: Task[] = [
   {
+    id: "T-1",
     title: "Payment Gateway Integration",
+    description: "Integrate Stripe payment gateway",
     priority: "High",
     dueDate: "29/06/2026",
     assignee: "James Smith",
     status: "Pending",
+    workspace: "Workspace 1",
   },
   {
+    id: "T-2",
     title: "User Authentication Bugfix",
+    description: "Fix user authentication bug",
     priority: "Medium",
     dueDate: "30/06/2026",
     assignee: "Eddie Lake",
     status: "In Process",
+    workspace: "Workspace 2",
   },
   {
+    id: "T-3",
     title: "Executive Summary Narrative",
+    description: "Write executive summary",
     priority: "High",
     dueDate: "02/07/2026",
     assignee: "Eddie Lake",
     status: "Done",
   },
   {
+    id: "T-4",
     title: "Design System Implementation",
+    description: "Implement design system",
     priority: "Low",
     dueDate: "05/07/2026",
-    assignee: "Maya Johnson",
     status: "In Process",
-  },
-  {
-    title: "Compliance Documentation",
-    priority: "Medium",
-    dueDate: "08/07/2026",
-    assignee: "Sarah Chen",
-    status: "Pending",
+    workspace: "Workspace 2",
   },
 ];
 
@@ -66,10 +71,13 @@ export function RecentTaskTable() {
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow className="hover:bg-transparent">
+              <TableHead className="px-5 font-semibold w-14">Id</TableHead>
               <TableHead className="px-5 font-semibold">Title</TableHead>
+              <TableHead className="px-4 font-semibold">Description</TableHead>
               <TableHead className="px-4 font-semibold">Priority</TableHead>
               <TableHead className="px-4 font-semibold">Due Date</TableHead>
               <TableHead className="px-4 font-semibold">Assignee</TableHead>
+              <TableHead className="px-4 font-semibold">Workspace</TableHead>
               <TableHead className="px-4 font-semibold">Status</TableHead>
               <TableHead className="pr-5 text-right font-semibold">
                 Actions
@@ -79,8 +87,14 @@ export function RecentTaskTable() {
           <TableBody>
             {tasks.map((task, idx) => (
               <TableRow key={idx} className="hover:bg-muted/20">
+                <TableCell className="px-5 py-3 text-muted-foreground font-medium">
+                  {idx + 1}
+                </TableCell>
                 <TableCell className="font-medium px-5 py-3">
                   {task.title}
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  {task.description || "-"}
                 </TableCell>
                 <TableCell className="px-4 py-3">
                   <Badge
@@ -100,17 +114,9 @@ export function RecentTaskTable() {
                   {task.dueDate}
                 </TableCell>
                 <TableCell className="px-4 py-3">{task.assignee}</TableCell>
+                <TableCell className="px-4 py-3">{task.workspace}</TableCell>
                 <TableCell className="px-4 py-3">
-                  <div className="flex items-center gap-1.5">
-                    {task.status === "Done" ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    ) : task.status === "In Process" ? (
-                      <CircleDot className="h-4 w-4 text-blue-500 animate-pulse shrink-0" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-amber-500 shrink-0" />
-                    )}
-                    <span className="text-xs font-medium">{task.status}</span>
-                  </div>
+                  <StatusLabel status={task?.status} />
                 </TableCell>
                 <TableCell className="pr-5 py-3 text-right">
                   <DropdownMenu>

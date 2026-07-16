@@ -31,7 +31,7 @@ export function NavMain({
               <SidebarMenuButton
                 asChild
                 tooltip={item?.title}
-                className="py-5 px-4 rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-all duration-200 font-medium text-zinc-600 dark:text-zinc-400 hover:text-white dark:hover:text-white group border border-transparent dark:hover:border-zinc-700 [&_svg]:size-4.5"
+                className="py-5 px-4 rounded-md hover:bg-primary dark:hover:bg-secondary-foreground transition-all duration-200 font-medium text-zinc-600 dark:text-zinc-400 hover:text-white dark:hover:text-white group border border-transparent dark:hover:border-zinc-700 [&_svg]:size-4.5"
                 isActive={pathname === item.url}
               >
                 <Link href={item.url}>
