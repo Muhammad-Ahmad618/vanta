@@ -66,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-2! hover:bg-transparent! h-auto"
             >
               <a href="#" className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-md bg-linear-to-br from-[#0047AB] via-[#4088ed] to-[#0047AB]   text-white dark:bg-white dark:text-zinc-950 font-black text-lg tracking-wider">
+                <div className="flex items-center justify-center w-8 h-8 rounded-md bg-linear-to-br from-[#4e85fa] to-[#2e1dea]   text-white dark:bg-white dark:text-zinc-950 font-black text-lg tracking-wider">
                   V
                 </div>
                 <span className="text-xl font-bold tracking-tight">Vanta</span>

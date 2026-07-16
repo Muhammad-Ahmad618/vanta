@@ -1,7 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
+import { CreateTask } from "./createTask";
 
 export function TaskHeader() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -14,9 +20,11 @@ export function TaskHeader() {
         <Button
           className="rounded-lg cursor-pointer text-sm px-5 py-4"
           size={"lg"}
+          onClick={() => setOpen(true)}
         >
           <CirclePlus /> Add Task
         </Button>
+        <CreateTask open={open} setOpen={setOpen} />
       </div>
     </div>
   );

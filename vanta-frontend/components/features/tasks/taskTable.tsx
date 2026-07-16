@@ -123,7 +123,7 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
               <EllipsisVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="rounded-md p-2">
             <DropdownMenuItem onClick={() => onView?.(task.id)}>
               View Details
             </DropdownMenuItem>
