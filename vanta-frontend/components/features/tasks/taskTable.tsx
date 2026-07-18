@@ -8,13 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ const tasks: Task[] = [
     title: "Payment Gateway Integration",
     description: "Integrate Stripe payment gateway",
     priority: "High",
-    dueDate: "29/06/2026",
+    due_date: "2026-06-29",
     assignee: "James Smith",
     status: "Pending",
     workspace: "Workspace 1",
@@ -37,7 +37,7 @@ const tasks: Task[] = [
     title: "User Authentication Bugfix",
     description: "Fix user authentication bug",
     priority: "Medium",
-    dueDate: "30/06/2026",
+    due_date: "2026-06-30",
     assignee: "Eddie Lake",
     status: "In Process",
     workspace: "Workspace 2",
@@ -47,7 +47,7 @@ const tasks: Task[] = [
     title: "Executive Summary Narrative",
     description: "Write executive summary",
     priority: "High",
-    dueDate: "02/07/2026",
+    due_date: "2026-07-02",
     assignee: "Eddie Lake",
     status: "Done",
   },
@@ -56,7 +56,7 @@ const tasks: Task[] = [
     title: "Design System Implementation",
     description: "Implement design system",
     priority: "Low",
-    dueDate: "05/07/2026",
+    due_date: "2026-07-15",
     status: "In Process",
     workspace: "Workspace 2",
   },
@@ -65,7 +65,7 @@ const tasks: Task[] = [
     title: "Compliance Documentation",
     description: "Write compliance documentation",
     priority: "Medium",
-    dueDate: "08/07/2026",
+    due_date: "2026-08-20",
     assignee: "Sarah Chen",
     status: "Pending",
   },
@@ -86,8 +86,8 @@ const columns = [
 interface TaskRowProps {
   task: Task;
   onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onEdit?: (id: Task) => void;
+  onDelete?: (id: Task) => void;
 }
 
 function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
@@ -112,9 +112,9 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
       </TableCell>
       <TableCell className="py-3 px-5">{task?.assignee || "-"}</TableCell>
       <TableCell className="py-3 px-5">{task?.workspace || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task?.dueDate}</TableCell>
+      <TableCell className="py-3 px-5">{task?.due_date}</TableCell>
       <TableCell className="py-3 px-5">
-        <StatusLabel status={task.status} />
+        <StatusLabel status={task?.status || "Pending"} />
       </TableCell>
       <TableCell className="py-3 px-5">
         <DropdownMenu>
@@ -127,10 +127,10 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
             <DropdownMenuItem onClick={() => onView?.(task.id)}>
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit?.(task.id)}>
+            <DropdownMenuItem onClick={() => onEdit?.(task)}>
               Edit Task
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete?.(task.id)}>
+            <DropdownMenuItem onClick={() => onDelete?.(task)}>
               Delete Task
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -143,8 +143,8 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
 interface TaskTableProps {
   data?: Task[];
   onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onEdit?: (id: Task) => void;
+  onDelete?: (id: Task) => void;
 }
 
 export function TaskTable({

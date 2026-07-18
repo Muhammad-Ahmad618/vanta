@@ -26,7 +26,7 @@ const tasks: Task[] = [
     title: "Payment Gateway Integration",
     description: "Integrate Stripe payment gateway",
     priority: "High",
-    dueDate: "29/06/2026",
+    due_date: "29/06/2026",
     assignee: "James Smith",
     status: "Pending",
     workspace: "Workspace 1",
@@ -36,7 +36,7 @@ const tasks: Task[] = [
     title: "User Authentication Bugfix",
     description: "Fix user authentication bug",
     priority: "Medium",
-    dueDate: "30/06/2026",
+    due_date: "30/06/2026",
     assignee: "Eddie Lake",
     status: "In Process",
     workspace: "Workspace 2",
@@ -46,7 +46,7 @@ const tasks: Task[] = [
     title: "Executive Summary Narrative",
     description: "Write executive summary",
     priority: "High",
-    dueDate: "02/07/2026",
+    due_date: "02/07/2026",
     assignee: "Eddie Lake",
     status: "Done",
   },
@@ -55,7 +55,7 @@ const tasks: Task[] = [
     title: "Design System Implementation",
     description: "Implement design system",
     priority: "Low",
-    dueDate: "05/07/2026",
+    due_date: "05/07/2026",
     status: "In Process",
     workspace: "Workspace 2",
   },
@@ -111,12 +111,12 @@ export function RecentTaskTable() {
                   </Badge>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-muted-foreground">
-                  {task.dueDate}
+                  {task.due_date}
                 </TableCell>
                 <TableCell className="px-4 py-3">{task.assignee}</TableCell>
                 <TableCell className="px-4 py-3">{task.workspace}</TableCell>
                 <TableCell className="px-4 py-3">
-                  <StatusLabel status={task?.status} />
+                  <StatusLabel status={task?.status || "Pending"} />
                 </TableCell>
                 <TableCell className="pr-5 py-3 text-right">
                   <DropdownMenu>

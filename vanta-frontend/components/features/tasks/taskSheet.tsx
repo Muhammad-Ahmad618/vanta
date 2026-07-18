@@ -14,27 +14,45 @@ import { useFormik } from "formik";
 import { toast } from "sonner";
 import { taskSchema } from "@/schemas/taskSchema";
 import { AppDropDown } from "@/components/custom/app-dropdown";
+import { Task } from "@/types/Task";
 
-interface CreateTaskProps {
+interface TaskSheetProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onSubmitHandler: (values: Task) => void;
+  task?: Task;
 }
 
-export function CreateTask({ open, setOpen }: CreateTaskProps) {
+export function TaskSheet({
+  open,
+  setOpen,
+  onSubmitHandler,
+  task,
+}: TaskSheetProps) {
+  const isUpdate = !!task;
+
   const formik = useFormik({
     initialValues: {
-      title: "",
-      description: "",
-      priority: "",
-      due_date: "",
+      id: task?.id || "",
+      title: task?.title || "",
+      description: task?.description || "",
+      priority: task?.priority || "Low",
+      status: task?.status || "Pending",
+      due_date: task?.due_date || "",
     },
     validationSchema: taskSchema,
     onSubmit: (values) => {
-      console.log(values);
-      toast.success("Task Created Successfully");
+      if (onSubmitHandler) {
+        onSubmitHandler(values);
+      } else {
+        console.log(values);
+        toast.success("Task Created Successfully");
+      }
+
       formik.resetForm();
       setOpen(false);
     },
+    enableReinitialize: true,
   });
 
   return (
@@ -43,10 +61,12 @@ export function CreateTask({ open, setOpen }: CreateTaskProps) {
         <SheetContent className="max-w-md!">
           <SheetHeader>
             <SheetTitle className="text-lg font-semibold">
-              Create Task
+              {isUpdate ? "Update Task" : "Create Task"}
             </SheetTitle>
             <SheetDescription>
-              Fill in the details to create your own personal tasks
+              {isUpdate
+                ? "Update Task Details"
+                : "Fill in the details to create your own personal tasks"}
             </SheetDescription>
             <div className="p-2 mt-4 text-left">
               <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -94,17 +114,35 @@ export function CreateTask({ open, setOpen }: CreateTaskProps) {
                   label="Priority"
                   id="priority"
                   placeholder="Select Priority"
-                  value={formik.values.priority}
+                  value={formik.values?.priority || "Low"}
                   onValueChange={(value) =>
                     formik.setFieldValue("priority", value)
                   }
                   options={[
-                    { label: "Low", value: "low" },
-                    { label: "Medium", value: "medium" },
-                    { label: "High", value: "high" },
+                    { label: "Low", value: "Low" },
+                    { label: "Medium", value: "Medium" },
+                    { label: "High", value: "High" },
                   ]}
                   error={
                     formik.touched.priority ? formik.errors.priority : undefined
+                  }
+                  required
+                />
+                <AppDropDown
+                  label="Status"
+                  id="status"
+                  placeholder="Select Status"
+                  value={formik.values?.status || "Pending"}
+                  onValueChange={(value) =>
+                    formik.setFieldValue("status", value)
+                  }
+                  options={[
+                    { label: "Pending", value: "Pending" },
+                    { label: "In Process", value: "In Process" },
+                    { label: "Done", value: "Done" },
+                  ]}
+                  error={
+                    formik.touched.status ? formik.errors.status : undefined
                   }
                   required
                 />
@@ -116,7 +154,13 @@ export function CreateTask({ open, setOpen }: CreateTaskProps) {
                     className="w-full h-10 rounded-md font-semibold text-sm shadow-sm cursor-pointer"
                     disabled={formik.isSubmitting}
                   >
-                    {formik.isSubmitting ? "Creating..." : "Create Task"}
+                    {formik.isSubmitting
+                      ? isUpdate
+                        ? "Saving..."
+                        : "Creating..."
+                      : isUpdate
+                        ? "Save Changes"
+                        : "Create Task"}
                   </Button>
                 </div>
               </form>

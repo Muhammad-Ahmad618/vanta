@@ -6,8 +6,8 @@ export interface Task {
   title: string;
   description: string;
   priority: Priority;
-  dueDate: string;
+  due_date: string;
   assignee?: string;
-  status: Status;
+  status?: Status;
   workspace?: string;
 }

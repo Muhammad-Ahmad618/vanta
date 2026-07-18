@@ -3,10 +3,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
-import { CreateTask } from "./createTask";
+import { TaskSheet } from "./taskSheet";
+import { Task } from "@/types/Task";
 
 export function TaskHeader() {
   const [open, setOpen] = useState(false);
+
+  const handleSubmit = (values: Task) => {
+    console.log(values);
+    setOpen(false);
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -24,7 +30,11 @@ export function TaskHeader() {
         >
           <CirclePlus /> Add Task
         </Button>
-        <CreateTask open={open} setOpen={setOpen} />
+        <TaskSheet
+          open={open}
+          setOpen={setOpen}
+          onSubmitHandler={handleSubmit}
+        />
       </div>
     </div>
   );
