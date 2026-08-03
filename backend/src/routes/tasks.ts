@@ -27,7 +27,7 @@ router.delete("/task/:id", protect, removeTask);
 router.delete("/task/:id/hard", protect, hardDeleteTaskController);
 router.post("/task/recover/:id", protect, recoverTask);
 router.get("/task/creator/:id", protect, fetchTasksByCreatorId);
-router.get("/task/assigned/:id", protect, fetchAssignedTasks); // not tested yet
+router.get("/task/assigned/:id", protect, fetchAssignedTasks);
 
 // Daily Focus
 router.get("/task/focus", protect, getDailyFocus);
