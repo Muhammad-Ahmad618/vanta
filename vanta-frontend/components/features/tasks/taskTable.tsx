@@ -18,10 +18,10 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Task } from "@/types/Task";
+import { Task, TaskTableProps } from "@/types/Task";
 import { StatusLabel } from "@/components/custom/status-label";
 
-const tasks: Task[] = [
+export const initialTasks: Task[] = [
   {
     id: "T-1",
     title: "Payment Gateway Integration",
@@ -85,7 +85,7 @@ const columns = [
 
 interface TaskRowProps {
   task: Task;
-  onView?: (id: string) => void;
+  onView?: (task: Task) => void;
   onEdit?: (id: Task) => void;
   onDelete?: (id: Task) => void;
 }
@@ -124,7 +124,7 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="rounded-md p-2">
-            <DropdownMenuItem onClick={() => onView?.(task.id)}>
+            <DropdownMenuItem onClick={() => onView?.(task)}>
               View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit?.(task)}>
@@ -140,15 +140,8 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
   );
 }
 
-interface TaskTableProps {
-  data?: Task[];
-  onView?: (id: string) => void;
-  onEdit?: (id: Task) => void;
-  onDelete?: (id: Task) => void;
-}
-
 export function TaskTable({
-  data = tasks,
+  data = initialTasks,
   onView,
   onEdit,
   onDelete,
