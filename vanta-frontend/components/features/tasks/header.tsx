@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { TaskSheet } from "./taskSheet";
-import { Task } from "@/types/Task";
+import { Task } from "@/types/task";
 
 export function TaskHeader() {
   const [open, setOpen] = useState(false);

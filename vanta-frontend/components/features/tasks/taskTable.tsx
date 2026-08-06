@@ -18,7 +18,7 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Task, TaskTableProps } from "@/types/Task";
+import { Task, TaskTableProps } from "@/types/task";
 import { StatusLabel } from "@/components/custom/status-label";
 
 export const initialTasks: Task[] = [

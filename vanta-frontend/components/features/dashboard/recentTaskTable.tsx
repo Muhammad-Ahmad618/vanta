@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StatusLabel } from "@/components/custom/status-label";
-import { Task } from "@/types/Task";
+import { Task } from "@/types/task";
 
 const tasks: Task[] = [
   {

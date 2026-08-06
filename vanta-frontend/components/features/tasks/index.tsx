@@ -14,7 +14,7 @@ import { TaskHeader } from "@/components/features/tasks/header";
 import { TaskTable, initialTasks } from "@/components/features/tasks/taskTable";
 import { TaskSheet } from "./taskSheet";
 import { TaskDetailModal } from "./taskDetailModal";
-import { Task } from "@/types/Task";
+import { Task } from "@/types/task";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 

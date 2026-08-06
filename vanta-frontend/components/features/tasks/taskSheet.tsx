@@ -14,7 +14,7 @@ import { useFormik } from "formik";
 import { toast } from "sonner";
 import { taskSchema } from "@/schemas/taskSchema";
 import { AppDropDown } from "@/components/custom/app-dropdown";
-import { Task } from "@/types/Task";
+import { Task } from "@/types/task";
 
 interface TaskSheetProps {
   open: boolean;

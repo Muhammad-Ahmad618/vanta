@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Task, Priority, Status } from "@/types/Task";
+import { Task, Priority, Status } from "@/types/task";
 import {
   Sparkles,
   Send,
@@ -22,7 +22,7 @@ import {
   Square,
   MessageSquare,
 } from "lucide-react";
-import { SubTask, Comment, TaskDetailModalProps } from "@/types/Task";
+import { SubTask, Comment, TaskDetailModalProps } from "@/types/task";
 
 function getMockComments(id?: string): Comment[] {
   if (id === "T-1") {

@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleDot, Clock } from "lucide-react";
-import { Status } from "@/types/Task";
+import { Status } from "@/types/task";
 
 export function StatusLabel({ status }: { status: Status }) {
   return (
