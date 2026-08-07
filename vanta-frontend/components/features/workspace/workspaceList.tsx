@@ -1,3 +1,5 @@
+"use client";
+
 import type { Workspace } from "@/types/workspace";
 import { WorkspaceCard } from "./workspaceCard";
 

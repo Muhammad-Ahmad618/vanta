@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import type { Workspace } from "@/types/workspace";
 import { Button } from "@/components/ui/button";
