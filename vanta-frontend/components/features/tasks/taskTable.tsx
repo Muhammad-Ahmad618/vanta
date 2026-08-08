@@ -119,8 +119,8 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
       <TableCell className="py-3 px-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <EllipsisVertical className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="rounded-lg">
+              <EllipsisVertical className="h-4 w-4 " />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="rounded-md p-2">

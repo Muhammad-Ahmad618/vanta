@@ -102,16 +102,22 @@ export function PersonalTasks() {
         task={selectedDetailTask}
       />
       <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Delete !</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete {taskToDelete?.title}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button variant="destructive" onClick={handleDelete}>
+            <AlertDialogCancel className="rounded-sm cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              className="rounded-sm cursor-pointer"
+            >
               Delete
             </Button>
           </AlertDialogFooter>

@@ -5,4 +5,5 @@ export interface Workspace {
   logo: string;
   members: number;
   activeTasks: number;
+  admin: boolean;
 }
