@@ -72,7 +72,7 @@ export function PersonalTasks() {
   };
 
   return (
-    <>
+    <div>
       <TaskHeader />
       <TaskTable
         data={taskList}
@@ -123,6 +123,6 @@ export function PersonalTasks() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

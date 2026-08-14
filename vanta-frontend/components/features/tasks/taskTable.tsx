@@ -92,11 +92,18 @@ interface TaskRowProps {
 
 function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
   return (
-    <TableRow className="hover:bg-muted/20">
-      <TableCell className="py-3 px-5">{task?.id}</TableCell>
-      <TableCell className="py-3 px-5">{task.title}</TableCell>
-      <TableCell className="py-3 px-5">{task.description || "-"}</TableCell>
-      <TableCell className="py-3 px-5">
+    <TableRow
+      className="hover:bg-muted/20 text-[13px] overflow-hidden
+    "
+    >
+      <TableCell className="py-3 px-5 whitespace-nowrap">{task?.id}</TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task.title}
+      </TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task.description || "-"}
+      </TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
         <Badge
           variant={
             task.priority === "High"
@@ -110,13 +117,19 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
           {task?.priority}
         </Badge>
       </TableCell>
-      <TableCell className="py-3 px-5">{task?.assignee || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task?.workspace || "-"}</TableCell>
-      <TableCell className="py-3 px-5">{task?.due_date}</TableCell>
-      <TableCell className="py-3 px-5">
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task?.assignee || "-"}
+      </TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task?.workspace || "-"}
+      </TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task?.due_date}
+      </TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
         <StatusLabel status={task?.status || "Pending"} />
       </TableCell>
-      <TableCell className="py-3 px-5">
+      <TableCell className="py-3 px-5 whitespace-nowrap">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-lg">
@@ -147,12 +160,15 @@ export function TaskTable({
   onDelete,
 }: TaskTableProps) {
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-card text-card-foreground shadow-sm">
-      <Table>
+    <div className="mt-5 rounded-md border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <Table className="w-full">
         <TableHeader className="bg-muted/40">
-          <TableRow className="hover:bg-transparent">
+          <TableRow className="hover:bg-transparent text-[13px]">
             {columns.map((col) => (
-              <TableHead key={col} className="p-5 font-semibold">
+              <TableHead
+                key={col}
+                className="p-5 font-semibold whitespace-nowrap"
+              >
                 {col}
               </TableHead>
             ))}

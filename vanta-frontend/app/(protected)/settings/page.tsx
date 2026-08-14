@@ -1,5 +1,11 @@
+import { SettingsLayout } from "@/components/features/settings";
+
 function SettingsPage() {
-  return <div>SettingsPage</div>;
+  return (
+    <div className="p-6">
+      <SettingsLayout />
+    </div>
+  );
 }
 
 export default SettingsPage;

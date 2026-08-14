@@ -17,7 +17,7 @@ export default function ProtectedLayout({
       }
     >
       <AppSidebar variant="inset" />
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-hidden">
         <SiteHeader />
         <div className="protected-layout">{children}</div>
       </SidebarInset>
