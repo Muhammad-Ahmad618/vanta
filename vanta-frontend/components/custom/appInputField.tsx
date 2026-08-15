@@ -81,13 +81,13 @@ export function AppInputField({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none flex items-center justify-center shrink-0"
+            className="cursor-pointer text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none flex items-center justify-center shrink-0"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
-              <Eye className="w-4 h-4" />
-            ) : (
               <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
             )}
           </button>
         ) : (
