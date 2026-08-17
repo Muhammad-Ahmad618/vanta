@@ -1,13 +1,18 @@
 "use client";
 
 import React from "react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import { Camera, User } from "lucide-react";
 
-export function AppImageupload() {
+export function AppImageupload({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (preview: string | null, file: File | null) => void;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -16,8 +21,11 @@ export function AppImageupload() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
+      if (value && value.startsWith("blob:")) {
+        URL.revokeObjectURL(value);
+      }
+      const previewUrl = URL.createObjectURL(file);
+      onChange(previewUrl, file);
     }
   };
 
@@ -29,9 +37,10 @@ export function AppImageupload() {
           onClick={handleAvatarClick}
           className="relative block h-20 w-20 overflow-hidden rounded-full border border-border bg-muted transition-opacity hover:opacity-90"
         >
-          {avatarUrl ? (
+          {value ? (
             <Image
-              src={avatarUrl}
+              id="profileImage"
+              src={value}
               alt="Profile picture"
               fill
               className="object-cover"
