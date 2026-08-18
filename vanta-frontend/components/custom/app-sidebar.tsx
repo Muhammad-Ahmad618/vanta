@@ -17,7 +17,7 @@ import {
   Clipboard,
   Folder,
   Settings,
-  CircleQuestionMark,
+  MessageSquare,
 } from "lucide-react";
 
 const data = {
@@ -48,9 +48,9 @@ const data = {
       icon: <Settings />,
     },
     {
-      title: "Get Help",
-      url: "/get-help",
-      icon: <CircleQuestionMark />,
+      title: "Feedback",
+      url: "/feedback",
+      icon: <MessageSquare />,
     },
   ],
 };
