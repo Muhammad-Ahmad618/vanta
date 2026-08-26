@@ -70,9 +70,9 @@ const atRiskTasks: AtriskTaskItem[] = [
 
 export function Dashboard() {
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2 bg-secondary-foreground ">
+    <div className="@container/main flex flex-1 flex-col gap-2  ">
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <div className="p-4 lg:p-6 mx-6 rounded-xl border border-zinc-300 space-y-3 bg-primary-light">
+        <div className="p-4 lg:p-6 mx-6 rounded-xl border border-zinc-300 space-y-3 ">
           <div className="flex items-center gap-1.5 justify-start ">
             <Sparkles className="text-primary size-4" />
             <p className="font-semibold text-sm text-primary">
@@ -87,7 +87,7 @@ export function Dashboard() {
             starting with the Cloud Infrastructure Audit. This will unlock three
             dependent tasks for the engineering team.
           </p>
-          <Button className="rounded-sm text-sm px-5 py-4" size={"lg"}>
+          <Button className="rounded-sm text-sm p-5 " size={"lg"}>
             Start Focus Session
           </Button>
         </div>
