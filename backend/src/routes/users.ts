@@ -14,8 +14,8 @@ const router = express.Router();
 
 router.get("/user", protect, authorize("admin"), fetchAllUsers);
 router.get("/user/:id", protect, authorize("admin"), fetchUserById);
-router.post("/user/search", protect, authorize("admin"), fetchUserByEmail);
-router.post("/user/:id", protect, removeUser);
+router.get("/user/search", protect, authorize("admin"), fetchUserByEmail);
+router.patch("/user/:id", protect, authorize("admin"), removeUser);
 router.post("/user/recover/:id", protect, authorize("admin"), recoverUser);
 router.delete("/user/delete/:id", protect, authorize("admin"), deleteUser);
 

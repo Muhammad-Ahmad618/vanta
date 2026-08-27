@@ -15,6 +15,7 @@ import {
   getTokenInfo,
   insertToken,
 } from "@/models/password_reset_model.js";
+import { saveRefreshToken } from "@/models/refresh_token_model.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -23,7 +24,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSWORD,
   },
 });
-
+// Login Logic
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -31,28 +32,58 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "email and password are required" });
   }
 
-  const user = await getUserByEmail(email);
-
-  if (!user || user.deleted_at !== null) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordValid) {
-    return res.status(401).json({ message: "Invalid password" });
-  }
-
   try {
-    const token = jwt.sign(
+    const user = await getUserByEmail(email);
+
+    if (!user || user.deleted_at !== null) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    const accesstoken = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET!,
-      { expiresIn: "1h" },
+      { expiresIn: "15m" },
     );
+
+    const refreshtoken = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_REFRESH_SECRET!,
+      { expiresIn: "7d" },
+    );
+
+    await saveRefreshToken(user.id, refreshtoken);
+
+    res.cookie("accessToken", accesstoken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshtoken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       message: "User logged in successfully",
-      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     return res
@@ -60,7 +91,7 @@ export const login = async (req: Request, res: Response) => {
       .json({ message: "Internal server error. Please try again." });
   }
 };
-
+// Sign Up
 export const register = async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
 
