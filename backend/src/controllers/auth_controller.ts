@@ -15,7 +15,11 @@ import {
   getTokenInfo,
   insertToken,
 } from "@/models/password_reset_model.js";
-import { saveRefreshToken } from "@/models/refresh_token_model.js";
+import {
+  deleteRefreshToken,
+  findRefreshToken,
+  saveRefreshToken,
+} from "@/models/refresh_token_model.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -221,5 +225,81 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error While Updating Password. Please Try Again" });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { id } = req.user;
+
+    const result = await deleteRefreshToken(id);
+
+    if (!result) {
+      return res.status(400).json({ message: "Error while logging out" });
+    }
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({ message: "User logged out successfully" });
+  } catch (error) {
+    console.log("Error", error);
+    return res
+      .status(500)
+      .json({ message: "Error While Logging out. Please Try Again" });
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  try {
+    const refreshtoken = req.cookies.refreshToken;
+
+    if (!refreshtoken) {
+      return res.status(400).json({ message: "You are not logged in" });
+    }
+
+    const decodedToken = jwt.verify(
+      refreshtoken,
+      process.env.JWT_REFRESH_SECRET!,
+    );
+
+    if (typeof decodedToken === "string") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { id, role } = decodedToken as {
+      id: number;
+      role: "user" | "admin";
+    };
+
+    const storedToken = await findRefreshToken(refreshtoken);
+
+    if (!storedToken) {
+      return res
+        .status(401)
+        .json({ message: "Invalid session. Please log in again." });
+    }
+
+    const accesstoken = jwt.sign({ id, role }, process.env.JWT_SECRET!, {
+      expiresIn: "15m",
+    });
+
+    res.cookie("accessToken", accesstoken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Access token generated successfully",
+    });
+  } catch (error) {
+    console.log("Error", error);
+    return res.status(401).json({ message: "Invalid or Expired Token" });
   }
 };
