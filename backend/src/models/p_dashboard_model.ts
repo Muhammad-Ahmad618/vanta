@@ -32,7 +32,7 @@ export const getDashboardTrends = async (userId: Number, mode: string) => {
       ${
         isMonthly
           ? `
-      'TOCHAR(created_at, 'Mon YYYYY') AS period`
+      TO_CHAR(created_at, 'Mon YYYY') AS period`
           : `Week ' || CEIL(EXTRACT(DOY FROM created_at)/ 7.0):: INT AS period`
       },
       
