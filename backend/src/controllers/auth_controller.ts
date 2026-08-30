@@ -92,7 +92,7 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Internal server error. Please try again." });
+      .json({ message: "Internal server error. Please try again.", error });
   }
 };
 // Sign Up

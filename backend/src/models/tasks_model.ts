@@ -33,7 +33,7 @@ export const getTaskByUserId = async (
   user_id: number,
   limit: number,
   offset: number,
-  status?: "pending" | "Inprogress" | "completed",
+  status?: "pending" | "in_progress" | "completed",
 ) => {
   try {
     let query = `
@@ -66,7 +66,7 @@ export const getTaskByAssignedTo = async (
   assigned_to: number,
   limit: number,
   offset: number,
-  status: "pending" | "Inprogress" | "completed" | null,
+  status: "pending" | "in_progress" | "completed" | null,
 ) => {
   try {
     const query = `
@@ -119,7 +119,7 @@ export const updateTask = async (
   user_id: number,
   title?: string,
   description?: string,
-  status?: "pending" | "Inprogress" | "completed",
+  status?: "pending" | "in_progress" | "completed",
   priority?: "low" | "medium" | "high",
   due_date?: Date,
   assigned_to?: number,
@@ -187,7 +187,7 @@ export const restoreTask = async (id: number) => {
 export const changeTaskStatus = async (
   id: number,
   user_id: number,
-  status: "pending" | "Inprogress" | "completed",
+  status: "pending" | "in_progress" | "completed",
 ) => {
   try {
     const result = await pool.query(
@@ -208,7 +208,7 @@ export const getDailyFocusTasks = async (user_id: number) => {
      FROM tasks 
      WHERE (user_id = $1 OR assigned_to = $1)
      AND deleted_at is NULL
-     AND status IN ('pending', 'Inprogress')
+     AND status IN ('pending', 'in_progress')
      AND due_date <= CURRENT_DATE += INTERVAL '1 day'
      ORDER BY
      CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
@@ -276,7 +276,7 @@ export const getActiveTasksById = async (user_id: number) => {
       FROM tasks
       WHERE (user_id = $1 OR assigned_to = $1)
       AND deleted_at IS NULL
-      AND status IN ('pending', 'Inprogress')
+      AND status IN ('pending', 'in_progress')
       ORDER BY due_date ASC
       `,
       [user_id],

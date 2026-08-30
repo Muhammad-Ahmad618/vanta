@@ -26,7 +26,7 @@ export const fetchAllTasks = async (req: Request, res: Response) => {
   const { limit, offset, status } = req.query;
   const limitNum = limit ? Number(limit) : 10;
   const offsetNum = offset ? Number(offset) : 0;
-  const statusVal = (status as "pending" | "Inprogress" | "completed") || null;
+  const statusVal = (status as "pending" | "in_progress" | "completed") || null;
 
   try {
     const tasks = await getAllTasks(limitNum, offsetNum, statusVal);
@@ -285,7 +285,7 @@ export const fetchAssignedTasks = async (req: Request, res: Response) => {
       assignee_id,
       limitNum,
       offsetNum,
-      status as "pending" | "Inprogress" | "completed" | null,
+      status as "pending" | "in_progress" | "completed" | null,
     );
 
     if (tasks.length === 0) {

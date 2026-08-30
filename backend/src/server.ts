@@ -6,6 +6,7 @@ import userRoutes from "./routes/users.js";
 import taskRoutes from "./routes/tasks.js";
 import taskCommentRoutes from "./routes/task_comments.js";
 import workspaceRoutes from "./routes/workspace.js";
+import PersonalDashBoardRoutes from "./routes/p_dashboard.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use("/api/v1", userRoutes);
 app.use("/api/v1", taskRoutes);
 app.use("/api/v1", taskCommentRoutes);
 app.use("/api/v1", workspaceRoutes);
+app.use("/api/v1", PersonalDashBoardRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
