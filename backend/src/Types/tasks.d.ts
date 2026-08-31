@@ -4,7 +4,9 @@ export interface task {
   description: string;
   priority: "low" | "medium" | "high";
   due_date: Date;
-  status: "pending" | "Inprogress" | "completed";
+  status: "pending" | "in_progress" | "completed";
+  assigned_to?: number;
+  workspace_id?: number;
 }
 
 export interface taskbreakDownProps {

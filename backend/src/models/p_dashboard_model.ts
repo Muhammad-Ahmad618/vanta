@@ -21,7 +21,7 @@ export const getDashboardStats = async (userId: number) => {
     throw error;
   }
 };
-
+// task trend graph
 export const getDashboardTrends = async (userId: Number, mode: string) => {
   try {
     const isMonthly = mode === "monthly";
@@ -31,19 +31,18 @@ export const getDashboardTrends = async (userId: Number, mode: string) => {
       SELECT
       ${
         isMonthly
-          ? `
-      TO_CHAR(created_at, 'Mon YYYY') AS period`
-          : `Week ' || CEIL(EXTRACT(DOY FROM created_at)/ 7.0):: INT AS period`
+          ? `TO_CHAR(created_at, 'Mon YYYY') AS period`
+          : `'Week ' || CEIL(EXTRACT(DOY FROM created_at)/ 7.0):: INT AS period`
       },
       
       COUNT (*) FILTER (WHERE status = 'completed') AS completed,
       COUNT (*) FILTER (WHERE status = 'in_progress') AS in_progress,
-      COUNT (*) FILTER (WHERE due_date <= NOW() AND status != 'complete') AS overdue
+      COUNT (*) FILTER (WHERE due_date <= NOW() AND status != 'completed') AS overdue
       FROM tasks
       WHERE (user_id = $1 OR assigned_to = $1) 
       AND deleted_at IS NULL
       AND created_at >= NOW() - ${isMonthly ? "INTERVAL '6 MONTH'" : "INTERVAL '6 WEEKS'"}
-      GROUP BY periods 
+      GROUP BY period 
       ORDER BY MIN(created_at)
     `,
       [userId],
@@ -52,6 +51,25 @@ export const getDashboardTrends = async (userId: Number, mode: string) => {
     return result.rows;
   } catch (error) {
     console.log("Error fetching dashboard trends:", error);
+    throw error;
+  }
+};
+
+export const getRecentTasks = async (userId: number) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT * FROM tasks 
+      WHERE ( user_id = $1 OR assigned_to = $1) AND deleted_at IS NULL
+      ORDER BY created_at DESC
+      LIMIT 10
+      `,
+      [userId],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.log("Error fetching recent tasks:", error);
     throw error;
   }
 };
