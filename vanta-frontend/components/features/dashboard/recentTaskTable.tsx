@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,54 +16,23 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StatusLabel } from "@/components/custom/status-label";
 import { Task } from "@/types/task";
+import { toast } from "sonner";
 
-const tasks: Task[] = [
-  {
-    id: "T-1",
-    title: "Payment Gateway Integration",
-    description: "Integrate Stripe payment gateway",
-    priority: "High",
-    due_date: "29/06/2026",
-    assignee: "James Smith",
-    status: "Pending",
-    workspace: "Workspace 1",
-  },
-  {
-    id: "T-2",
-    title: "User Authentication Bugfix",
-    description: "Fix user authentication bug",
-    priority: "Medium",
-    due_date: "30/06/2026",
-    assignee: "Eddie Lake",
-    status: "In Process",
-    workspace: "Workspace 2",
-  },
-  {
-    id: "T-3",
-    title: "Executive Summary Narrative",
-    description: "Write executive summary",
-    priority: "High",
-    due_date: "02/07/2026",
-    assignee: "Eddie Lake",
-    status: "Done",
-  },
-  {
-    id: "T-4",
-    title: "Design System Implementation",
-    description: "Implement design system",
-    priority: "Low",
-    due_date: "05/07/2026",
-    status: "In Process",
-    workspace: "Workspace 2",
-  },
-];
+function handleMarkAsDone(task: Task) {
+  toast.success(`${task?.title} marked as done`);
+}
 
-export function RecentTaskTable() {
+export function RecentTaskTable({
+  tasks,
+  onView,
+}: {
+  tasks: Task[];
+  onView: (task: Task) => void;
+}) {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
@@ -129,16 +100,15 @@ export function RecentTaskTable() {
                         <EllipsisVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="rounded-md p-2">
                       <DropdownMenuGroup>
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Task</DropdownMenuItem>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem>Mark as Done</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
-                          Delete Task
+                        <DropdownMenuItem onClick={() => onView(task)}>
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleMarkAsDone(task)}
+                        >
+                          Mark as Done
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>

@@ -1,3 +1,5 @@
+"use client";
+
 import { ChartAreaInteractive } from "@/components/features/dashboard/taskCompletionChaart";
 import { SectionCards } from "@/components/features/dashboard/statsCards";
 import { RecentTaskTable } from "@/components/features/dashboard/recentTaskTable";
@@ -5,6 +7,9 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AtriskTaskItem } from "@/types/dashboard";
 import { AtRiskTaskList } from "./atRiskTaskList";
+import { TaskDetailModal } from "@/components/custom/taskDetailModal";
+import { Task } from "@/types/task";
+import { useState } from "react";
 
 const statsData = [
   {
@@ -68,52 +73,110 @@ const atRiskTasks: AtriskTaskItem[] = [
   },
 ];
 
+const tasks: Task[] = [
+  {
+    id: "T-1",
+    title: "Payment Gateway Integration",
+    description: "Integrate Stripe payment gateway",
+    priority: "High",
+    due_date: "29/06/2026",
+    assignee: "James Smith",
+    status: "Pending",
+    workspace: "Workspace 1",
+  },
+  {
+    id: "T-2",
+    title: "User Authentication Bugfix",
+    description: "Fix user authentication bug",
+    priority: "Medium",
+    due_date: "30/06/2026",
+    assignee: "Eddie Lake",
+    status: "In Process",
+    workspace: "Workspace 2",
+  },
+  {
+    id: "T-3",
+    title: "Executive Summary Narrative",
+    description: "Write executive summary",
+    priority: "High",
+    due_date: "02/07/2026",
+    assignee: "Eddie Lake",
+    status: "Done",
+  },
+  {
+    id: "T-4",
+    title: "Design System Implementation",
+    description: "Implement design system",
+    priority: "Low",
+    due_date: "05/07/2026",
+    status: "In Process",
+    workspace: "Workspace 2",
+  },
+];
+
 export function Dashboard() {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [openDetail, setOpenDetail] = useState<boolean>(false);
+
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2  ">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <div className="p-4 lg:p-6 mx-6 rounded-xl border border-zinc-300 space-y-3 ">
-          <div className="flex items-center gap-1.5 justify-start ">
-            <Sparkles className="text-primary size-4" />
-            <p className="font-semibold text-sm text-primary">
-              Daily Focus Assistant
+    <>
+      <div className="@container/main flex flex-1 flex-col gap-2  ">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <div className="p-4 lg:p-6 mx-6 rounded-xl border border-zinc-300 space-y-3 ">
+            <div className="flex items-center gap-1.5 justify-start ">
+              <Sparkles className="text-primary size-4" />
+              <p className="font-semibold text-sm text-primary">
+                Daily Focus Assistant
+              </p>
+            </div>
+            <h2 className="font-semibold text-xl">
+              You have 4 high-priority tasks requiring attention before 2 PM.
+            </h2>
+            <p className="text-zinc-500 text-xs lg:text-sm ">
+              Based on your current velocity and deadline risks, Vanta
+              recommends starting with the Cloud Infrastructure Audit. This will
+              unlock three dependent tasks for the engineering team.
             </p>
+            <Button className="rounded-sm text-sm p-5 " size={"lg"}>
+              Start Focus Session
+            </Button>
           </div>
-          <h2 className="font-semibold text-xl">
-            You have 4 high-priority tasks requiring attention before 2 PM.
-          </h2>
-          <p className="text-zinc-500 text-xs lg:text-sm ">
-            Based on your current velocity and deadline risks, Vanta recommends
-            starting with the Cloud Infrastructure Audit. This will unlock three
-            dependent tasks for the engineering team.
-          </p>
-          <Button className="rounded-sm text-sm p-5 " size={"lg"}>
-            Start Focus Session
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
-          {statsData?.map((stats, index) => (
-            <SectionCards
-              key={index}
-              title={stats?.title || "Title"}
-              value={stats?.value || "N/A"}
-              trend={stats?.trend || "0"}
-              trendDirection={stats?.trendDirection}
-              footerText={stats?.footerText || "something went wrong"}
+          <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
+            {statsData?.map((stats, index) => (
+              <SectionCards
+                key={index}
+                title={stats?.title || "Title"}
+                value={stats?.value || "N/A"}
+                trend={stats?.trend || "0"}
+                trendDirection={stats?.trendDirection}
+                footerText={stats?.footerText || "something went wrong"}
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-3 px-4 lg:px-6">
+            <div className="col-span-2">
+              <ChartAreaInteractive />
+            </div>
+            {/* At-Risk Tasks Panel */}
+            <AtRiskTaskList atRiskTasks={atRiskTasks} />
+          </div>
+          <div className="px-4 lg:px-6">
+            <RecentTaskTable
+              tasks={tasks}
+              onView={(task) => {
+                setSelectedTask(task);
+                setOpenDetail(true);
+              }}
             />
-          ))}
-        </div>
-        <div className="grid grid-cols-3 gap-3 px-4 lg:px-6">
-          <div className="col-span-2">
-            <ChartAreaInteractive />
           </div>
-          {/* At-Risk Tasks Panel */}
-          <AtRiskTaskList atRiskTasks={atRiskTasks} />
-        </div>
-        <div className="px-4 lg:px-6">
-          <RecentTaskTable />
         </div>
       </div>
-    </div>
+      <TaskDetailModal
+        key={selectedTask?.id}
+        task={selectedTask || undefined}
+        open={openDetail}
+        onOpenChange={setOpenDetail}
+      />
+    </>
   );
 }
