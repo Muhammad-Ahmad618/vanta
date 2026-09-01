@@ -1,4 +1,5 @@
 import pool from "@/db.js";
+import { task } from "@/Types/tasks.js";
 
 export const getDashboardStats = async (userId: number) => {
   try {
@@ -59,9 +60,20 @@ export const getRecentTasks = async (userId: number) => {
   try {
     const result = await pool.query(
       `
-      SELECT * FROM tasks 
-      WHERE ( user_id = $1 OR assigned_to = $1) AND deleted_at IS NULL
-      ORDER BY created_at DESC
+      SELECT 
+      tasks.task_id,
+      tasks.title,
+      tasks.description,
+      tasks.priority,
+      tasks.status,
+      tasks.due_date,
+      users.username AS assignee_name,
+      workspace.name as workspace_name
+       FROM tasks 
+      LEFT JOIN users ON tasks.assigned_to = users.id
+      LEFT JOIN workspace ON tasks.workspace_id = workspace.id 
+      WHERE ( tasks.user_id = $1 OR tasks.assigned_to = $1) AND tasks.deleted_at IS NULL
+      ORDER BY tasks.created_at DESC
       LIMIT 10
       `,
       [userId],
@@ -70,6 +82,66 @@ export const getRecentTasks = async (userId: number) => {
     return result.rows;
   } catch (error) {
     console.log("Error fetching recent tasks:", error);
+    throw error;
+  }
+};
+
+export const getAtRiskTasks = async (userId: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+        task_id, title, description, priority,
+        status, due_date, assigned_to, workspace_id
+      FROM tasks
+      WHERE (user_id = $1 OR assigned_to = $1)
+        AND deleted_at IS NULL
+        AND status != 'completed'
+      `,
+      [userId],
+    );
+
+    const tasks: task[] = result.rows;
+
+    if (tasks.length === 0) return [];
+
+    const today = new Date();
+
+    return tasks
+      .map((task) => {
+        const dayUntilDue = Math.ceil(
+          (new Date(task.due_date).getTime() - today.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+
+        let score = 0;
+
+        if (dayUntilDue < -7) score += 70;
+        else if (dayUntilDue < 0) score += 55;
+        else if (dayUntilDue <= 1) score += 40;
+        else if (dayUntilDue <= 3) score += 25;
+        else if (dayUntilDue <= 7) score += 15;
+
+        if (task.priority === "high") score += 25;
+        else if (task.priority === "medium") score += 15;
+        else score += 10;
+
+        score = Math.min(score, 100);
+
+        const risk_level =
+          score >= 80 ? "critical" : score >= 50 ? "high" : "medium";
+
+        return {
+          ...task,
+          risk_score: score,
+          risk_level: risk_level,
+          daysUntilDue: dayUntilDue,
+        };
+      })
+      .filter((task) => task.risk_score >= 50)
+      .sort((a, b) => b.risk_score - a.risk_score)
+      .slice(0, 5);
+  } catch (error) {
+    console.log("Error fetching risk score", error);
     throw error;
   }
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  getAtRiskTasks,
   getDashboardStats,
   getDashboardTrends,
   getRecentTasks,
@@ -56,6 +57,24 @@ export const fetchRecentTasks = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(500).json({
       message: "Error While Fetching Recent Tasks Please Try Again",
+    });
+  }
+};
+
+export const fetchAtRiskTasks = async (req: Request, res: Response) => {
+  if (!req?.user?.id) return res.status(401).json({ message: "Unauthorized" });
+
+  const userId = Number(req.user.id);
+
+  try {
+    const atRiskTasks = await getAtRiskTasks(userId);
+    return res.status(200).json({
+      message: "At Risk Tasks fetched successfully",
+      data: atRiskTasks,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Fetching, Please Try Again",
     });
   }
 };
