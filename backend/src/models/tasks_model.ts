@@ -29,27 +29,38 @@ export const getTaskById = async (id: number) => {
   }
 };
 
-export const getTaskByUserId = async (
+export const getMyTasks = async (
   user_id: number,
   limit: number,
   offset: number,
-  status?: "pending" | "in_progress" | "completed",
+  status?: "pending" | "in_progress" | "completed" | null,
 ) => {
   try {
     let query = `
-      SELECT * FROM tasks
-      WHERE user_id = $1 AND deleted_at IS NULL
+      SELECT
+      tasks.task_id,
+      tasks.title,
+      tasks.description,
+      tasks.priority,
+      tasks.status,
+      tasks.due_date,
+      users.username AS assignee ,
+      workspace.name AS workspace
+      FROM tasks
+      LEFT JOIN users ON tasks.assigned_to = users.id
+      LEFT JOIN workspace ON tasks.workspace_id = workspace.id
+      WHERE (tasks.user_id = $1 OR tasks.assigned_to = $1) AND tasks.deleted_at is NULL
     `;
 
     const values: (number | string)[] = [user_id];
 
     if (status) {
       values.push(status);
-      query += ` AND status = $${values.length}`;
+      query += ` AND tasks.status = $${values.length}`;
     }
 
     values.push(limit);
-    query += ` ORDER BY task_id DESC LIMIT $${values.length}`;
+    query += ` ORDER BY tasks.created_at DESC LIMIT $${values.length}`;
 
     values.push(offset);
     query += ` OFFSET $${values.length}`;
@@ -285,6 +296,26 @@ export const getActiveTasksById = async (user_id: number) => {
     return result.rows;
   } catch (error) {
     console.log("Error Fetching Active Tasks Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const updateDueDate = async (
+  task_id: number,
+  user_id: number,
+  due_date: string,
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE FROM tasks 
+    SET due_date = $3 
+    WHERE task_id = $1 AND user_id = $2 AND deleted_at is NULL
+    RETURNING *`,
+      [task_id, user_id, due_date],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error updating due_date", error);
     throw error;
   }
 };

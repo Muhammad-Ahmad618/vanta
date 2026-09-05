@@ -1,7 +1,7 @@
 import express from "express";
 import {
   fetchAllTasks,
-  fetchTasksByCreatorId,
+  fetchMyTasks,
   AddNewTask,
   updateTaskDetails,
   updateTaskStatus,
@@ -13,6 +13,7 @@ import {
   saveTaskBreakdown,
   breakdownTask,
   getRiskReport,
+  updateTaskDueDate,
 } from "../controllers/task_controller.js";
 import { protect } from "@/middleware/authentication.js";
 import { authorize } from "@/middleware/authorization.js";
@@ -23,10 +24,11 @@ router.get("/task", protect, authorize("admin"), fetchAllTasks);
 router.post("/task", protect, AddNewTask);
 router.put("/task/:id", protect, updateTaskDetails);
 router.patch("/task/:id/status", protect, updateTaskStatus);
+router.patch("/task/:id/due-date", protect, updateTaskDueDate);
 router.delete("/task/:id", protect, removeTask);
 router.delete("/task/:id/hard", protect, hardDeleteTaskController);
 router.post("/task/recover/:id", protect, recoverTask);
-router.get("/task/creator/:id", protect, fetchTasksByCreatorId);
+router.get("/task/my-tasks", protect, fetchMyTasks);
 router.get("/task/assigned/:id", protect, fetchAssignedTasks);
 
 // Daily Focus

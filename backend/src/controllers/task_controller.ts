@@ -10,7 +10,7 @@ import {
   hardDeleteTask,
   getAllTasks,
   getTaskByAssignedTo,
-  getTaskByUserId,
+  getMyTasks,
   updateTask,
   getTaskById,
   softDeleteTask,
@@ -19,6 +19,7 @@ import {
   saveSubTasks,
   getTaskBreakDown,
   getActiveTasksById,
+  updateDueDate,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
@@ -45,14 +46,19 @@ export const fetchAllTasks = async (req: Request, res: Response) => {
   }
 };
 
-export const fetchTasksByCreatorId = async (req: Request, res: Response) => {
-  const { limit, offset } = req.query;
+export const fetchMyTasks = async (req: Request, res: Response) => {
+  const { limit, offset, status } = req.query;
   const limitNum = limit ? Number(limit) : 10;
   const offsetNum = offset ? Number(offset) : 0;
-  const id = Number(req.params.id);
+  const statusVal = (status as "pending" | "in_progress" | "completed") || null;
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   try {
-    const tasks = await getTaskByUserId(id, limitNum, offsetNum);
+    const tasks = await getMyTasks(user_id, limitNum, offsetNum, statusVal);
 
     if (tasks.length === 0) {
       return res.status(404).json({ message: "No tasks found for this user" });
@@ -64,7 +70,7 @@ export const fetchTasksByCreatorId = async (req: Request, res: Response) => {
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Internal Server Error Please Try Again" });
+      .json({ message: "Internal Server Error Please Try Again", error });
   }
 };
 
@@ -148,7 +154,7 @@ export const updateTaskDetails = async (req: Request, res: Response) => {
 
 export const updateTaskStatus = async (req: Request, res: Response) => {
   const { status } = req.body;
-  const id = Number(req.params.id);
+  const task_id = Number(req.params?.id);
   const user_id = Number(req.user?.id);
 
   if (!status) {
@@ -157,7 +163,7 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
     });
   }
 
-  if (!id) {
+  if (!task_id) {
     return res.status(400).json({
       message: "Please provide task id",
     });
@@ -168,7 +174,7 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
   }
 
   try {
-    const task = await changeTaskStatus(id, user_id, status);
+    const task = await changeTaskStatus(task_id, user_id, status);
     return res
       .status(200)
       .json({ message: "Task status changed successfully", data: task });
@@ -176,6 +182,49 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error While Updating Task Status Please Try Again" });
+  }
+};
+
+export const updateTaskDueDate = async (req: Request, res: Response) => {
+  const task_id = Number(req.params?.id);
+  const user_id = Number(req.user?.id);
+  const { due_date } = req.body;
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!task_id) {
+    return res
+      .status(401)
+      .json({ message: "Task Id Not found Opearting Failed" });
+  }
+
+  if (!due_date) {
+    return res.status(401).json({ message: "Due Date Not Found" });
+  }
+
+  try {
+    const task = await getTaskById(task_id);
+
+    if (!task || task.deleted_at !== null) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    if (req.user?.role !== "admin" && task.user_id !== user_id) {
+      return res.status(404).json({ message: "Forbidden" });
+    }
+
+    const result = await updateDueDate(task_id, user_id, due_date);
+
+    return res.status(200).json({
+      message: "Due Date Updated Successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error while updating due date. Please try again.",
+    });
   }
 };
 

@@ -3,7 +3,7 @@ import pool from "../db.js";
 export const getAllComments = async (task_id: number) => {
   try {
     const result = await pool.query(
-      "SELECT task_comments.id AS comment_id , task_comments.content, task_comments.created_at, users.username AS name FROM task_comments INNER JOIN users ON users.id = task_comments.user_id WHERE task_comments.task_id = $1 AND task_comments.deleted_at IS NULL ORDER BY task_comments.id DESC",
+      "SELECT task_comments.id AS comment_id , task_comments.content, task_comments.created_at, users.username AS name, users.avatar_url FROM task_comments INNER JOIN users ON users.id = task_comments.user_id WHERE task_comments.task_id = $1 AND task_comments.deleted_at IS NULL ORDER BY task_comments.id DESC",
       [task_id],
     );
     return result.rows;
