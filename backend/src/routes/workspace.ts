@@ -10,6 +10,7 @@ import {
   leaveWorkspace,
   hardDeleteWorkspace,
   recoverWorkspace,
+  fetchUserWorkspaces,
 } from "../controllers/workspace_controller.js";
 import { authorize } from "@/middleware/authorization.js";
 import { protect } from "@/middleware/authentication.js";
@@ -27,8 +28,18 @@ router.post(
 );
 router.get("/workspace", protect, authorize("admin"), fetchEveryWorkspace);
 router.delete("/workspace/:id", protect, removeWorkspace);
-router.delete("/workspace/:id/hard", protect, authorize("admin"), hardDeleteWorkspace);
-router.post("/workspace/recover/:id", protect, authorize("admin"), recoverWorkspace);
+router.delete(
+  "/workspace/:id/hard",
+  protect,
+  authorize("admin"),
+  hardDeleteWorkspace,
+);
+router.post(
+  "/workspace/recover/:id",
+  protect,
+  authorize("admin"),
+  recoverWorkspace,
+);
 router.get("/workspace/:id/members", protect, fetchWorkspaceMembers);
 router.delete(
   "/workspace/:workspace_id/member/:id",
@@ -38,5 +49,6 @@ router.delete(
 router.post("/workspace/invite", protect, inviteWorkspaceMember);
 router.post("/workspace/transfer-ownership", protect, transferOwnership);
 router.post("/workspace/leave", protect, leaveWorkspace);
+router.post("/workspace/get-workspaces", fetchUserWorkspaces);
 
 export default router;

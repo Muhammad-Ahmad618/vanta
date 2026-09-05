@@ -1,5 +1,6 @@
 import pool from "../db.js";
 
+// admin route
 export const getAllWorkspaces = async (limit: number, offset: number) => {
   try {
     const result = await pool.query(
@@ -91,6 +92,59 @@ export const restoreWorkspace = async (id: number) => {
     return result.rows[0];
   } catch (error) {
     console.log("Error Restoring Workspace Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const getUserWorkspaces = async (user_id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+  workspace.id,
+  workspace.name,
+  workspace.description,
+  CASE
+   WHEN workspace.owner_id = $1 THEN 'owner'
+   ELSE workspace_member.role
+  END AS role,
+  COUNT(DISTINCT CASE 
+  WHEN tasks.status != 'completed' AND
+  tasks.deleted_at is NULL
+  THEN tasks.task_id
+  END) AS active_tasks,
+  COUNT(DISTINCT workspace_member_all.user_id) AS member_count,
+  (
+   SELECT json_agg(sub.avatar_url)
+   FROM(
+    SELECT u.avatar_url
+    FROM workspace_member wm
+    JOIN users u on u.id = wm.user_id
+    WHERE wm.workspace_id = workspace.id
+    LIMIT 3
+   )sub
+  ) AS member_preview
+  FROM workspace
+  
+  LEFT JOIN workspace_member ON workspace_member.workspace_id = workspace.id
+  AND workspace_member.user_id = $1
+
+  LEFT JOIN workspace_member AS workspace_member_all ON
+  workspace_member_all.workspace_id = workspace.id
+  
+  LEFT JOIN tasks ON tasks.workspace_id = workspace.id
+  WHERE ( workspace.owner_id = $1 OR workspace_member.user_id = $1 ) AND workspace.deleted_at is NULL
+  GROUP BY
+  workspace.id,
+  workspace.name,
+  workspace.description,
+  workspace_member.role
+  ORDER BY workspace.created_at DESC`,
+      [user_id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.log("cannot fetch workspace try again !");
     throw error;
   }
 };

@@ -6,6 +6,7 @@ import {
   getWorkspaceById,
   softDeleteWorkspace,
   restoreWorkspace,
+  getUserWorkspaces,
 } from "@/models/workspace_model.js";
 import {
   getMembersByWorkspaceId,
@@ -314,5 +315,30 @@ export const leaveWorkspace = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error Leaving Workspace. Please Try Again" });
+  }
+};
+
+export const fetchUserWorkspaces = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorize" });
+  }
+
+  try {
+    const workspace = await getUserWorkspaces(user_id);
+
+    if (!workspace || workspace.length === 0) {
+      return res.status(200).json({ message: "No workspace Found" });
+    }
+
+    return res.status(200).json({
+      message: "Fetched Successfully",
+      data: workspace,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error Finding Workspaces. Please Try Again" });
   }
 };
