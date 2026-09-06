@@ -18,11 +18,12 @@ export const createWorkspace = async (
   name: string,
   description: string,
   owner_id: number,
+  logo_url: string | null,
 ) => {
   try {
     const result = await pool.query(
-      "INSERT INTO workspace(name, description, owner_id) VALUES ($1,$2,$3) RETURNING*",
-      [name, description, owner_id],
+      "INSERT INTO workspace(name, description, owner_id, logo_url) VALUES ($1,$2,$3,$4) RETURNING*",
+      [name, description, owner_id, logo_url],
     );
     return result.rows[0];
   } catch (error) {
@@ -145,6 +146,27 @@ export const getUserWorkspaces = async (user_id: number) => {
     return result.rows;
   } catch (error) {
     console.log("cannot fetch workspace try again !");
+    throw error;
+  }
+};
+
+export const isWorkspaceMember = async (
+  workspace_id: Number,
+  user_id: Number,
+) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT * FROM workspace_member
+      WHERE workspace_id = $1  and user_id = $2;
+      LIMIT 1
+      `,
+      [workspace_id, user_id],
+    );
+
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Fetching Workspace Member Please Try Again.", error);
     throw error;
   }
 };

@@ -15,6 +15,7 @@ import {
 import { authorize } from "@/middleware/authorization.js";
 import { protect } from "@/middleware/authentication.js";
 import { validator } from "@/middleware/validator.js";
+import { upload } from "@/config/multer.js";
 import { createWorkspaceValidator } from "@/validator/workspace_validator.js";
 
 const router = express.Router();
@@ -22,6 +23,7 @@ const router = express.Router();
 router.post(
   "/workspace",
   protect,
+  upload.single("workspace_logo"),
   createWorkspaceValidator,
   validator,
   createNewWorkspace,
@@ -49,6 +51,6 @@ router.delete(
 router.post("/workspace/invite", protect, inviteWorkspaceMember);
 router.post("/workspace/transfer-ownership", protect, transferOwnership);
 router.post("/workspace/leave", protect, leaveWorkspace);
-router.post("/workspace/get-workspaces", fetchUserWorkspaces);
+router.get("/workspace/get-workspaces", protect, fetchUserWorkspaces);
 
 export default router;

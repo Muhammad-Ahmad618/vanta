@@ -7,6 +7,7 @@ import {
   softDeleteWorkspace,
   restoreWorkspace,
   getUserWorkspaces,
+  isWorkspaceMember,
 } from "@/models/workspace_model.js";
 import {
   getMembersByWorkspaceId,
@@ -15,11 +16,17 @@ import {
   removeWorkspaceMemberByUser,
   executeTransferOwnership,
 } from "@/models/workspace_member_model.js";
+import { uploadImage } from "@/utils/upload_image.js";
+import {
+  generateInviteLink,
+  getInviteByToken,
+} from "@/models/workspace_invite_model.js";
 
 export const createNewWorkspace = async (req: Request, res: Response) => {
-  const { workspace_name, workspace_description, owner_id } = req.body;
+  const { workspace_name, workspace_description } = req.body;
+  const user_id = Number(req.user?.id);
 
-  if (!owner_id) {
+  if (!user_id) {
     return res.status(401).json({ message: "Unauthorized, Please Login" });
   }
 
@@ -30,19 +37,30 @@ export const createNewWorkspace = async (req: Request, res: Response) => {
   }
 
   try {
+    let logo_url = null;
+
+    if (req.file) {
+      logo_url = await uploadImage(req.file.buffer, "vanta/workspaces");
+    }
+
     const workspace = await createWorkspace(
       workspace_name,
       workspace_description,
-      owner_id,
+      user_id,
+      logo_url,
     );
+
+    await insertWorkspaceMember(workspace.id, user_id, "owner");
+
     return res
       .status(200)
       .json({ message: "Workspace created successfully", data: workspace });
   } catch (error) {
     // console.error("Error creating workspace:", error);
-    return res
-      .status(500)
-      .json({ message: "Error While Creating Workspace. Please Try Again" });
+    return res.status(500).json({
+      message: "Error While Creating Workspace. Please Try Again",
+      error,
+    });
   }
 };
 
@@ -220,10 +238,10 @@ export const kickoutWorkspaceMember = async (req: Request, res: Response) => {
 };
 
 export const inviteWorkspaceMember = async (req: Request, res: Response) => {
-  const { workspace_id, user_id, role } = req.body;
+  const { workspace_id, role } = req.body;
 
   const workspaceId = Number(workspace_id);
-  const userId = Number(user_id);
+  const userId = Number(req.user?.id);
 
   if (isNaN(userId)) {
     return res
@@ -250,10 +268,10 @@ export const inviteWorkspaceMember = async (req: Request, res: Response) => {
 };
 
 export const transferOwnership = async (req: Request, res: Response) => {
-  const { workspace_id, owner_id, newOwner_id } = req.body;
+  const { workspace_id, newOwner_id } = req.body;
 
   const workspaceId = Number(workspace_id);
-  const ownerId = Number(owner_id);
+  const ownerId = Number(req.user?.id);
   const newOwnerId = Number(newOwner_id);
 
   if (isNaN(workspaceId) || isNaN(ownerId) || isNaN(newOwnerId)) {
@@ -285,9 +303,9 @@ export const transferOwnership = async (req: Request, res: Response) => {
 };
 
 export const leaveWorkspace = async (req: Request, res: Response) => {
-  const { user_id, workspace_id } = req.body;
+  const { workspace_id } = req.body;
 
-  const userId = Number(user_id);
+  const userId = Number(req.user?.id);
   const workspaceId = Number(workspace_id);
 
   if (isNaN(userId) || isNaN(workspaceId)) {
@@ -297,6 +315,18 @@ export const leaveWorkspace = async (req: Request, res: Response) => {
   }
 
   try {
+    const workspace = await getWorkspaceById(workspaceId);
+    if (!workspace || workspace.deleted_at !== null) {
+      return res.status(404).json({ message: "Workspace Not Found" });
+    }
+
+    if (workspace.owner_id === userId) {
+      return res.status(400).json({
+        message:
+          "You are the owner. Transfer ownership or delete the workspace before leaving.",
+      });
+    }
+
     const workspaceMember = await removeWorkspaceMemberByUser(
       userId,
       workspaceId,
@@ -340,5 +370,93 @@ export const fetchUserWorkspaces = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error Finding Workspaces. Please Try Again" });
+  }
+};
+
+export const generateWorkspaceInvite = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+  const workspace_id = Number(req.params.id);
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (isNaN(workspace_id)) {
+    return res
+      .status(400)
+      .json({ message: "Workspace ID Not Found Please Try Again." });
+  }
+
+  try {
+    const workspace = await getWorkspaceById(workspace_id);
+
+    if (!workspace || workspace.deleted_at !== null) {
+      return res.status(404).json({ message: "Workspace Not Found" });
+    }
+
+    if (workspace.owner_id !== user_id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const invite = await generateInviteLink(workspace_id, user_id);
+
+    const inviteLink = `${process.env.FRONTEND_URL}/join/${invite.token}`;
+
+    return res.status(200).json({
+      message: "Invite Link Generated Successfully",
+      data: {
+        invite_link: inviteLink,
+        expires_at: invite.expires_at,
+        token: invite.token,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error Generating Invite Link Please Try Again." });
+  }
+};
+
+export const joinWorkspaceViaInvite = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (typeof token !== "string") {
+    return res
+      .status(400)
+      .json({ message: "Invalid Invite Token Please Try Again" });
+  }
+
+  try {
+    const invite = await getInviteByToken(token);
+
+    if (!invite) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or Expired Invite Link" });
+    }
+
+    const alreadyMember = await isWorkspaceMember(invite.workspace_id, user_id);
+
+    if (alreadyMember) {
+      return res.status(400).json({
+        message: "You are already a member of this workspace",
+      });
+    }
+
+    await insertWorkspaceMember(invite.workspace_id, user_id, "member");
+
+    return res.status(200).json({
+      message: "Joined Workspace Successfully",
+      data: { workspace_id: invite.workspace_id },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error Joining Workspace Please Try Again." });
   }
 };
