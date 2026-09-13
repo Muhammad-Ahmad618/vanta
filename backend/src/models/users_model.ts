@@ -41,7 +41,7 @@ export const getAllUsers = async (
 
     if (role) {
       values.push(role);
-      query += `AND role = $${values.length}`;
+      query += ` AND role = $${values.length}`;
     }
 
     query += " ORDER BY created_at DESC";
@@ -60,9 +60,16 @@ export const getAllUsers = async (
   }
 };
 
-export const getUserById = async (id: number) => {
+export const getCurrentUser = async (id: number) => {
   try {
-    const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+    const result = await pool.query(
+      `
+      SELECT id, username, email, bio, avatar_url, role, created_at 
+      FROM users 
+      WHERE id = $1 AND deleted_at IS NULL
+      `,
+      [id],
+    );
     return result.rows[0];
   } catch (error) {
     console.log("Error Fetching User Please Try Again.", error);
@@ -160,6 +167,84 @@ export const restoreUser = async (id: number) => {
     return result.rows[0];
   } catch (error) {
     console.log("Error Restoring User Please Try Again.", error);
+    throw error;
+  }
+};
+
+// Update user profile information -> Settings
+export const updateUserProfile = async (
+  id: number,
+  username: string,
+  bio: string,
+  avatar_url: string | null,
+) => {
+  try {
+    const result = await pool.query(
+      `
+      UPDATE users SET username = $1, bio = $2, avatar_url = COALESCE($3, avatar_url) WHERE id = $4 AND deleted_at IS NULL RETURNING id,username,email,bio,avatar_url
+      `,
+      [username, bio, avatar_url, id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Updating User Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const getUserPreferences = async (user_id: Number) => {
+  try {
+    const result = await pool.query(
+      `
+     SELECT * FROM user_preferences WHERE user_id = $1
+        `,
+      [user_id],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Fetching User Preferences Please Try Again.", error);
+    throw error;
+  }
+};
+
+export const upsertUserPreferences = async (
+  user_id: Number,
+  in_app_notifications: boolean,
+  at_risk_alerts: boolean,
+  task_assigned: boolean,
+  task_due_soon: boolean,
+  comment_mentions: boolean,
+) => {
+  try {
+    const result = await pool.query(
+      `
+      INSERT INTO user_preferences
+      (user_id,in_app_notifications,at_risk_alerts,task_assigned,task_due_soon,comment_mentions)
+      VALUES
+      ($1,$2,$3,$4,$5,$6)
+      ON CONFLICT(user_id) 
+      DO UPDATE 
+      SET
+      in_app_notifications = $2,
+      at_risk_alerts = $3,
+      task_assigned = $4,
+      task_due_soon = $5,
+      comment_mentions = $6
+      updated_at = NOW()
+      RETURNING *
+      `,
+      [
+        user_id,
+        in_app_notifications,
+        at_risk_alerts,
+        task_assigned,
+        task_due_soon,
+        comment_mentions,
+      ],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error Updating User Preferences Please Try Again.", error);
     throw error;
   }
 };

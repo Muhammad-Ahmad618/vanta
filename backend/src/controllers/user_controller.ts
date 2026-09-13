@@ -2,14 +2,18 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import {
   getAllUsers,
-  getUserById,
+  getCurrentUser,
   harddeleteUser,
   softDeleteUser,
   restoreUser,
   checkExistingPassword,
   updatePassword,
   getUserByEmail,
+  updateUserProfile,
+  getUserPreferences,
+  upsertUserPreferences,
 } from "@/models/users_model.js";
+import { uploadImage } from "@/utils/upload_image.js";
 
 export const fetchAllUsers = async (req: Request, res: Response) => {
   const { limit, offset, role } = req.query;
@@ -50,15 +54,16 @@ export const fetchUserByEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const fetchUserById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+// Fetch currently logged in user
+export const fetchCurrentUser = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
 
-  if (!id) {
+  if (!user_id) {
     return res.status(400).json({ message: "id is required" });
   }
 
   try {
-    const user = await getUserById(Number(id));
+    const user = await getCurrentUser(user_id);
     if (!user || user.deleted_at !== null) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -72,6 +77,7 @@ export const fetchUserById = async (req: Request, res: Response) => {
   }
 };
 
+// Soft delete a user
 export const removeUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -99,35 +105,44 @@ export const removeUser = async (req: Request, res: Response) => {
 };
 
 export const updateUserPassword = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const user_id = Number(req.user?.id);
+  const { current, newPassword } = req.body;
 
-  if (!id) {
-    return res.status(400).json({ message: "id is required" });
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const { password } = req.body;
-
-  if (!password) {
-    return res.status(400).json({ message: "Enter valid Password" });
-  }
-
-  const existingPassword = await checkExistingPassword(Number(id));
-
-  const isPasswordValid = await bcrypt.compare(password, existingPassword);
-
-  if (isPasswordValid) {
+  if (!current || !newPassword) {
     return res
       .status(400)
-      .json({ message: "New and Current Password cannot be the same" });
+      .json({ message: "Current Password and New Password is required" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   try {
-    const user = await updatePassword(Number(id), hashedPassword);
-    return res
-      .status(200)
-      .json({ message: "Password Updated successfully", data: user });
+    const existingPassword = await checkExistingPassword(user_id);
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      current,
+      existingPassword,
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: "Invalid Current Password" });
+    }
+
+    const isNewPasswordSameAsCurrent = await bcrypt.compare(
+      newPassword,
+      existingPassword,
+    );
+
+    if (isNewPasswordSameAsCurrent) {
+      return res.status(400).json({ message: "New Password Cannot Be Same" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await updatePassword(user_id, hashedPassword);
+    return res.status(200).json({ message: "Password Updated successfully" });
   } catch (error) {
     return res
       .status(500)
@@ -135,6 +150,7 @@ export const updateUserPassword = async (req: Request, res: Response) => {
   }
 };
 
+// Permanently deletes the users
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -157,6 +173,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+// Restores the soft deleted users
 export const recoverUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -176,5 +193,136 @@ export const recoverUser = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error Restoring User. Please Try Again" });
+  }
+};
+
+// Update users profile information
+export const UpdateUserProfile = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+  const { username, bio } = req.body;
+
+  if (!user_id) {
+    return res.status(400).json({ message: "Unauthorized" });
+  }
+  if (!username) {
+    return res.status(400).json({ message: "Enter Valid Username" });
+  }
+
+  try {
+    let avatar_url: string | null = null;
+    if (req.file) {
+      avatar_url = await uploadImage(req.file.buffer, "users/avatars");
+    }
+
+    const user = await updateUserProfile(user_id, username, bio, avatar_url);
+
+    return res.status(200).json({
+      message: "Profile Updated Successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Updating Profile. Please Try Again",
+    });
+  }
+};
+
+// Fetch Users Notification Preferences
+
+export const fetchUserPreferences = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(400).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const user_preferences = await getUserPreferences(user_id);
+
+    if (!user_preferences) {
+      return res.status(200).json({
+        message: "No User Preferences Found",
+        data: {
+          in_app_notifications: true,
+          at_risk_alerts: true,
+          task_assigned: true,
+          task_due_soon: true,
+          comment_mentions: true,
+          email_notifications: false,
+        },
+      });
+    }
+
+    return res.status(200).json({
+      message: "User Preferences Fetched Successfully",
+      data: user_preferences,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Fetching User Preferences. Please Try Again",
+    });
+  }
+};
+
+// Update user notification Preferences
+
+export const updateUserPreferences = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+  const {
+    in_app_notifications,
+    at_risk_alerts,
+    task_assigned,
+    task_due_soon,
+    comment_mentions,
+  } = req.body;
+
+  if (!user_id) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const preferences = await upsertUserPreferences(
+      user_id,
+      in_app_notifications ?? true,
+      at_risk_alerts ?? true,
+      task_assigned ?? true,
+      task_due_soon ?? true,
+      comment_mentions ?? true,
+    );
+
+    return res.status(200).json({
+      message: "User Preferences Updated Successfully",
+      data: preferences,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Updating User Preferences. Please Try Again",
+    });
+  }
+};
+
+// Delete My account
+
+export const deleteMyAccount = async (req: Request, res: Response) => {
+  const user_id = Number(req.user?.id);
+
+  if (!user_id) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+  try {
+    await softDeleteUser(user_id);
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+      message: "Account Deleted Successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Deleting Account. Please Try Again",
+    });
   }
 };
