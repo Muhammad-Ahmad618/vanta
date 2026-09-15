@@ -259,7 +259,7 @@ export const refresh = async (req: Request, res: Response) => {
     const refreshtoken = req.cookies.refreshToken;
 
     if (!refreshtoken) {
-      return res.status(400).json({ message: "You are not logged in" });
+      return res.status(401).json({ message: "You are not logged in" });
     }
 
     const decodedToken = jwt.verify(
