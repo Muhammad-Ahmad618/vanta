@@ -7,6 +7,7 @@ import taskRoutes from "./routes/tasks.js";
 import taskCommentRoutes from "./routes/task_comments.js";
 import workspaceRoutes from "./routes/workspace.js";
 import PersonalDashBoardRoutes from "./routes/p_dashboard.js";
+import healthRoute from "@/routes/health.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use(
   }),
 );
 
+app.use("/api/v1/", healthRoute);
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api/v1", authRoutes);
