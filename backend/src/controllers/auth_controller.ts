@@ -185,11 +185,15 @@ export const forgotPassword = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
   const { token, newPassword } = req.body;
 
+  if (!token) {
+    return res.status(404).json({ message: "Token Required" });
+  }
+
   try {
     const tokenInfo = await getTokenInfo(token);
 
     if (!tokenInfo) {
-      return res.status(400).json({ message: "invalid Token" });
+      return res.status(400).json({ message: "Invalid Token" });
     }
 
     const { user_id, expires_at } = tokenInfo;

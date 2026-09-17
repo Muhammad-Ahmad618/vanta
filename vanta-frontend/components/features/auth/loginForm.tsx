@@ -2,14 +2,16 @@
 
 import { AppInputField } from "@/components/custom/appInputField";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import FormHeader from "@/components/shared/formHeader";
 import { loginSchema } from "@/schemas/authSchema";
 import { useFormik } from "formik";
-import { toast } from "sonner";
+import { useLogin } from "@/hooks/auth/auth";
 
 export function LoginForm() {
+  const { mutate: loginUser, isPending } = useLogin();
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -17,8 +19,7 @@ export function LoginForm() {
     },
     validationSchema: loginSchema,
     onSubmit: (values) => {
-      console.log(values);
-      toast.success("Logged in Successfully");
+      loginUser(values);
     },
   });
 
@@ -74,7 +75,7 @@ export function LoginForm() {
             <span>Remember me</span>
           </label>
           <Link
-            href="/forgotPassword"
+            href="/forgot-password"
             className="text-secondary hover:underline font-medium"
           >
             Forgot password?
@@ -86,9 +87,15 @@ export function LoginForm() {
           type="submit"
           variant="default"
           className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
-          disabled={formik.isSubmitting}
+          disabled={isPending}
         >
-          {formik.isSubmitting ? "Signing In..." : "Sign In"}
+          {isPending ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Signing In...
+            </span>
+          ) : (
+            "Sign In"
+          )}
         </Button>
       </form>
 

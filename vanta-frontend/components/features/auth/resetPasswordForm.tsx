@@ -4,20 +4,24 @@ import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/shared/formHeader";
 import { AppInputField } from "@/components/custom/appInputField";
 import { useFormik } from "formik";
-import { resetPassword } from "@/schemas/authSchema";
-import { Lock } from "lucide-react";
-import { toast } from "sonner";
+import { resetPasswordSchema } from "@/schemas/authSchema";
+import { Loader2, Lock } from "lucide-react";
+import { useResetPassword } from "@/hooks/auth/forgotPassword";
+import { useParams } from "next/navigation";
 
 function ResetPasswordForm() {
+  const { mutate: resetPassword, isPending } = useResetPassword();
+  const params = useParams<{ token: string }>();
+  const token = params.token;
+
   const formik = useFormik({
     initialValues: {
       password: "",
       confirmPassword: "",
     },
-    validationSchema: resetPassword,
-    onSubmit: (values) => {
-      console.log(values);
-      toast.success("Password reset Successful!");
+    validationSchema: resetPasswordSchema,
+    onSubmit: (password) => {
+      resetPassword({ ...password, token });
     },
   });
 
@@ -68,7 +72,13 @@ function ResetPasswordForm() {
           variant="default"
           className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
         >
-          Reset Password
+          {isPending ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+            </span>
+          ) : (
+            "Reset Password"
+          )}
         </Button>
       </form>
     </div>

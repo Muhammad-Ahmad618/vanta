@@ -2,14 +2,15 @@
 
 import { AppInputField } from "@/components/custom/appInputField";
 import { Button } from "@/components/ui/button";
-import { Mail, User, Lock } from "lucide-react";
+import { Mail, User, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import FormHeader from "@/components/shared/formHeader";
 import { useFormik } from "formik";
 import { signupSchema } from "@/schemas/authSchema";
-import { toast } from "sonner";
+import { useRegister } from "@/hooks/auth/auth";
 
 export function RegisterForm() {
+  const { mutate: registerUser, isPending } = useRegister();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -19,8 +20,7 @@ export function RegisterForm() {
     },
     validationSchema: signupSchema,
     onSubmit: (values) => {
-      console.log(values);
-      toast.success("Account Created Successfully!");
+      registerUser(values);
     },
   });
 
@@ -107,8 +107,15 @@ export function RegisterForm() {
           type="submit"
           variant="default"
           className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
+          disabled={isPending}
         >
-          Create Account
+          {isPending ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Creating Account...
+            </span>
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
 

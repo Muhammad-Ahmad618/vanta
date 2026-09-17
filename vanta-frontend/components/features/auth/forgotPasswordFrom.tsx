@@ -3,43 +3,47 @@
 import { useState } from "react";
 import { AppInputField } from "@/components/custom/appInputField";
 import { Button } from "@/components/ui/button";
-import { Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import FormHeader from "@/components/shared/formHeader";
 import { useFormik } from "formik";
 import { forgotPassword } from "@/schemas/authSchema";
-import { toast } from "sonner";
+import { useForgotPassword } from "@/hooks/auth/forgotPassword";
 
-function ForgotPasswordFrom() {
-  const [resetlink, setResetLink] = useState(false);
+function ForgotPasswordForm() {
+  const [emailSent, setEmailSent] = useState(false);
+
+  const { mutate: forgotPasswordHook, isPending: isForgotPasswordLoading } =
+    useForgotPassword();
 
   const formik = useFormik({
     initialValues: {
       email: "",
     },
+
     validationSchema: forgotPassword,
+
     onSubmit: (values) => {
-      console.log(values);
-      toast.success("Reset Link sent Successfully !");
-      setResetLink(true);
+      forgotPasswordHook(values, {
+        onSuccess: () => {
+          setEmailSent(true);
+        },
+      });
     },
   });
 
   return (
-    <div className="w-full p-10 border rounded-2xl ">
-      {/* Brand Header */}
+    <div className="w-full p-10 border rounded-2xl">
       <FormHeader
         title="Forgot Password"
         description={
-          !resetlink
-            ? "Enter your Email to Receive Reset Link"
-            : " A Reset link has been sent to your email address"
+          emailSent
+            ? "A reset link has been sent to your email address"
+            : "Enter your email to receive a reset link"
         }
       />
 
-      {/* Forgot Password Form */}
-
-      {!resetlink ? (
+      {!emailSent && (
         <form onSubmit={formik.handleSubmit} className="space-y-5">
           <AppInputField
             type="email"
@@ -55,27 +59,33 @@ function ForgotPasswordFrom() {
             required
           />
 
-          {/* Submit Button */}
           <Button
             type="submit"
             variant="default"
+            disabled={isForgotPasswordLoading}
             className="w-full h-10 rounded-md font-semibold text-sm mt-2 shadow-sm cursor-pointer"
           >
-            Send Reset Link
+            {isForgotPasswordLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Sending Reset Link...
+              </span>
+            ) : (
+              "Send Reset Link"
+            )}
           </Button>
         </form>
-      ) : (
-        <>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Please check your inbox and follow the instructions to reset your
-            password
-          </p>
-        </>
       )}
 
-      <div className="border-t border-gray-200 my-5"></div>
+      {emailSent && (
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          Please check your inbox and follow the instructions to reset your
+          password.
+        </p>
+      )}
 
-      {/* Bottom links */}
+      <div className="border-t border-gray-200 my-5" />
+
       <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-4">
         <Link
           href="/login"
@@ -89,4 +99,4 @@ function ForgotPasswordFrom() {
   );
 }
 
-export default ForgotPasswordFrom;
+export default ForgotPasswordForm;

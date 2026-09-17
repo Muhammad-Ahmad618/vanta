@@ -38,7 +38,7 @@ export const forgotPassword = yup.object({
     .required("Email address is required"),
 });
 
-export const resetPassword = yup.object({
+export const resetPasswordSchema = yup.object({
   password: yup
     .string()
     .required("Password is required")
