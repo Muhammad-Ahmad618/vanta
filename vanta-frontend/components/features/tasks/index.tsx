@@ -14,29 +14,35 @@ import { TaskHeader } from "@/components/features/tasks/header";
 import { TaskTable, initialTasks } from "@/components/features/tasks/taskTable";
 import { TaskSheet } from "./taskSheet";
 import { TaskDetailModal } from "../../custom/taskDetailModal";
-import { Task } from "@/types/task";
+import { Tasks } from "@/types/task";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export function PersonalTasks() {
-  const [taskList, setTaskList] = useState<Task[]>(initialTasks);
+  const [taskList, setTaskList] = useState<Tasks[]>(initialTasks);
   const [openSheet, setOpenSheet] = useState<boolean>(false);
-  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [selectedTask, setSelectedTask] = useState<Tasks | undefined>(
+    undefined,
+  );
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [taskToDelete, setTaskToDelete] = useState<Task | undefined>(undefined);
+  const [taskToDelete, setTaskToDelete] = useState<Tasks | undefined>(
+    undefined,
+  );
 
   // Task Detail Modal states
   const [openDetail, setOpenDetail] = useState<boolean>(false);
   const [selectedDetailTask, setSelectedDetailTask] = useState<
-    Task | undefined
+    Tasks | undefined
   >(undefined);
 
-  const onSubmitHandler = (values: Task) => {
+  const onSubmitHandler = (values: Tasks) => {
     if (selectedTask) {
       // Edit mode
-      setTaskList((prev) => prev.map((t) => (t.id === values.id ? values : t)));
+      setTaskList((prev) =>
+        prev.map((t) => (t.task_id === values.task_id ? values : t)),
+      );
       // Synchronize task details modal if active
-      if (selectedDetailTask?.id === values.id) {
+      if (selectedDetailTask?.task_id === values.task_id) {
         setSelectedDetailTask(values);
       }
       toast.success("Task updated successfully");
@@ -60,8 +66,10 @@ export function PersonalTasks() {
 
   const handleDelete = () => {
     if (taskToDelete) {
-      setTaskList((prev) => prev.filter((t) => t.id !== taskToDelete.id));
-      if (selectedDetailTask?.id === taskToDelete.id) {
+      setTaskList((prev) =>
+        prev.filter((t) => t.task_id !== taskToDelete.task_id),
+      );
+      if (selectedDetailTask?.task_id === taskToDelete.task_id) {
         setOpenDetail(false);
         setSelectedDetailTask(undefined);
       }
@@ -96,7 +104,7 @@ export function PersonalTasks() {
         task={selectedTask}
       />
       <TaskDetailModal
-        key={selectedDetailTask?.id}
+        key={selectedDetailTask?.task_id}
         open={openDetail}
         onOpenChange={setOpenDetail}
         task={selectedDetailTask}

@@ -19,10 +19,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StatusLabel } from "@/components/custom/status-label";
-import { Task } from "@/types/task";
+import { recentTasks } from "@/types/dashboard";
+import { formatDate } from "@/lib/dateFormater";
 import { toast } from "sonner";
 
-function handleMarkAsDone(task: Task) {
+function handleMarkAsDone(task: recentTasks) {
   toast.success(`${task?.title} marked as done`);
 }
 
@@ -30,8 +31,8 @@ export function RecentTaskTable({
   tasks,
   onView,
 }: {
-  tasks: Task[];
-  onView: (task: Task) => void;
+  tasks: recentTasks[];
+  onView: (task: recentTasks) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -70,9 +71,9 @@ export function RecentTaskTable({
                 <TableCell className="px-4 py-3">
                   <Badge
                     variant={
-                      task.priority === "High"
+                      task.priority === "high"
                         ? "destructive"
-                        : task.priority === "Medium"
+                        : task.priority === "medium"
                           ? "default"
                           : "secondary"
                     }
@@ -82,12 +83,16 @@ export function RecentTaskTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-muted-foreground">
-                  {task.due_date}
+                  {formatDate(task.due_date)}
                 </TableCell>
-                <TableCell className="px-4 py-3">{task.assignee}</TableCell>
-                <TableCell className="px-4 py-3">{task.workspace}</TableCell>
                 <TableCell className="px-4 py-3">
-                  <StatusLabel status={task?.status || "Pending"} />
+                  {task.assignee_name || "______"}
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  {task.workspace_name || "_____"}
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <StatusLabel status={task?.status || "pending"} />
                 </TableCell>
                 <TableCell className="pr-5 py-3 text-right">
                   <DropdownMenu>

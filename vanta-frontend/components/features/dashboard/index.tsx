@@ -1,122 +1,54 @@
 "use client";
 
 import { ChartAreaInteractive } from "@/components/features/dashboard/taskCompletionChaart";
-import { SectionCards } from "@/components/features/dashboard/statsCards";
+import { StatCard } from "@/components/features/dashboard/statsCards";
 import { RecentTaskTable } from "@/components/features/dashboard/recentTaskTable";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AtriskTaskItem } from "@/types/dashboard";
 import { AtRiskTaskList } from "./atRiskTaskList";
 import { TaskDetailModal } from "@/components/custom/taskDetailModal";
-import { Task } from "@/types/task";
 import { useState } from "react";
-
-const statsData = [
-  {
-    title: "Total Tasks",
-    description: "",
-    value: "5",
-    trend: "0%",
-    trendDirection: "down",
-    footerText: "Tasks for the last 6 months",
-  },
-  {
-    title: "Completed Tasks",
-    description: "",
-    value: "20",
-    trend: "0",
-    trendDirection: "up",
-    footerText: "Tasks Completed this Week",
-  },
-  {
-    title: "In-Progress Tasks",
-    description: "",
-    value: "14",
-    trend: "+5%",
-    trendDirection: "up",
-    footerText: "Tasks that are not Completed",
-  },
-  {
-    title: "Overdue Tasks",
-    description: "",
-    value: "3",
-    trend: "-10%",
-    trendDirection: "down",
-    footerText: "Tasks that are past their due date",
-  },
-];
-
-const atRiskTasks: AtriskTaskItem[] = [
-  {
-    title: "Cloud Infrastructure Audit",
-    assignee: "James Smith",
-    dueDate: "Jul 18, 2026",
-    daysOverdue: 2,
-    riskLevel: 92,
-    priority: "Critical",
-  },
-  {
-    title: "Security Compliance Review",
-    assignee: "Sarah Chen",
-    dueDate: "Jul 20, 2026",
-    daysOverdue: 0,
-    riskLevel: 74,
-    priority: "High",
-  },
-  {
-    title: "API Rate Limit Refactor",
-    assignee: "Maya Johnson",
-    dueDate: "Jul 22, 2026",
-    daysOverdue: 0,
-    riskLevel: 58,
-    priority: "High",
-  },
-];
-
-const tasks: Task[] = [
-  {
-    id: "T-1",
-    title: "Payment Gateway Integration",
-    description: "Integrate Stripe payment gateway",
-    priority: "High",
-    due_date: "29/06/2026",
-    assignee: "James Smith",
-    status: "Pending",
-    workspace: "Workspace 1",
-  },
-  {
-    id: "T-2",
-    title: "User Authentication Bugfix",
-    description: "Fix user authentication bug",
-    priority: "Medium",
-    due_date: "30/06/2026",
-    assignee: "Eddie Lake",
-    status: "In Process",
-    workspace: "Workspace 2",
-  },
-  {
-    id: "T-3",
-    title: "Executive Summary Narrative",
-    description: "Write executive summary",
-    priority: "High",
-    due_date: "02/07/2026",
-    assignee: "Eddie Lake",
-    status: "Done",
-  },
-  {
-    id: "T-4",
-    title: "Design System Implementation",
-    description: "Implement design system",
-    priority: "Low",
-    due_date: "05/07/2026",
-    status: "In Process",
-    workspace: "Workspace 2",
-  },
-];
+import {
+  useGetDashboardStats,
+  useGetAtRiskTasks,
+  useGetTaskTrends,
+  useGetRecentTasks,
+} from "@/hooks/user/dashboard";
+import { recentTasks } from "@/types/dashboard";
 
 export function Dashboard() {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<recentTasks | null>(null);
   const [openDetail, setOpenDetail] = useState<boolean>(false);
+  const [timeRange, setTimeRange] = useState<"6w" | "6m">("6w");
+  const trendMode = timeRange === "6m" ? "monthly" : "weekly";
+
+  const {
+    data: dashboardStats,
+    isLoading,
+    isError,
+    error,
+  } = useGetDashboardStats();
+
+  const {
+    data: atriskTasks,
+    isLoading: isAtRiskLoading,
+    isError: isAtRiskError,
+    error: atRiskError,
+  } = useGetAtRiskTasks();
+
+  const {
+    data: taskTrends,
+    isLoading: isTaskTrendsLoading,
+    isError: isTaskTrendsError,
+    error: taskTrendsError,
+  } = useGetTaskTrends(trendMode);
+
+  const {
+    data: recentTasks,
+    isLoading: isRecentTasksLoading,
+    isError: isRecentTasksError,
+    error: recentTasksError,
+  } = useGetRecentTasks();
 
   return (
     <>
@@ -141,28 +73,42 @@ export function Dashboard() {
               Start Focus Session
             </Button>
           </div>
-          <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
-            {statsData?.map((stats, index) => (
-              <SectionCards
-                key={index}
-                title={stats?.title || "Title"}
-                value={stats?.value || "N/A"}
-                trend={stats?.trend || "0"}
-                trendDirection={stats?.trendDirection}
-                footerText={stats?.footerText || "something went wrong"}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-5 dark:*:data-[slot=card]:bg-card">
+            <StatCard
+              title="Total Tasks"
+              value={dashboardStats?.data?.total || 0}
+            />
+            <StatCard
+              title="Completed"
+              value={dashboardStats?.data?.completed || 0}
+            />
+            <StatCard
+              title="In Progress"
+              value={dashboardStats?.data?.in_progress || 0}
+            />
+            <StatCard
+              title="Pending"
+              value={dashboardStats?.data?.pending || 0}
+            />
+            <StatCard
+              title="Overdue"
+              value={dashboardStats?.data?.overdue || 0}
+            />
           </div>
           <div className="grid grid-cols-3 gap-3 px-4 lg:px-6">
             <div className="col-span-2">
-              <ChartAreaInteractive />
+              <ChartAreaInteractive
+                chartData={taskTrends || []}
+                timeRange={timeRange}
+                onTimeRangeChange={(v) => setTimeRange(v as "6w" | "6m")}
+              />
             </div>
             {/* At-Risk Tasks Panel */}
-            <AtRiskTaskList atRiskTasks={atRiskTasks} />
+            <AtRiskTaskList atRiskTasks={atriskTasks || []} />
           </div>
           <div className="px-4 lg:px-6">
             <RecentTaskTable
-              tasks={tasks}
+              tasks={recentTasks || []}
               onView={(task) => {
                 setSelectedTask(task);
                 setOpenDetail(true);
@@ -172,7 +118,7 @@ export function Dashboard() {
         </div>
       </div>
       <TaskDetailModal
-        key={selectedTask?.id}
+        key={selectedTask?.task_id}
         task={selectedTask || undefined}
         open={openDetail}
         onOpenChange={setOpenDetail}

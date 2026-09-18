@@ -1,54 +1,36 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { TrendUpIcon, TrendDownIcon } from "@phosphor-icons/react";
+import { Card } from "@/components/ui/card";
+import { LucideIcon } from "lucide-react";
 
-export function SectionCards({
+interface SectionCardProps {
+  title: string;
+  value: string | number;
+  icon?: LucideIcon;
+  accentColor?: string; // e.g. "border-t-blue-500"
+}
+
+export function StatCard({
   title,
   value,
-  trend,
-  trendDirection,
-  footerText,
-}: {
-  title: string;
-  value: string;
-  trend: string;
-  trendDirection: string;
-  footerText: string;
-}) {
+  icon: Icon,
+  accentColor = "border-t-primary",
+}: SectionCardProps) {
   return (
-    <Card className="@container/card rounded-lg">
-      <CardHeader>
-        <CardDescription>{title}</CardDescription>
-        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+    <Card
+      className={`@container/card border-t-4 ${accentColor} p-5 shadow-sm transition-shadow hover:shadow rounded-lg`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </p>
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground/70" />}
+      </div>
+      <div className="mt-3">
+        <span className="text-3xl font-extrabold tracking-tight tabular-nums @[250px]/card:text-4xl">
           {value}
-        </CardTitle>
-        <CardAction>
-          <Badge variant="outline">
-            {trendDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
-            {trend}
-          </Badge>
-        </CardAction>
-      </CardHeader>
-      <CardFooter className="flex-col items-start gap-1.5 text-sm">
-        <div className="line-clamp-1 flex gap-2 font-medium">
-          Trending {trendDirection} this month{" "}
-          {trendDirection === "up" ? (
-            <TrendUpIcon className="size-4" />
-          ) : (
-            <TrendDownIcon className="size-4" />
-          )}
-        </div>
-        <div className="text-muted-foreground">{footerText}</div>
-      </CardFooter>
+        </span>
+      </div>
     </Card>
   );
 }

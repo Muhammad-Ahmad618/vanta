@@ -13,9 +13,16 @@ export const fetchDashboardStats = async (req: Request, res: Response) => {
 
   try {
     const stats = await getDashboardStats(userId);
-    return res
-      .status(200)
-      .json({ message: "Dashboard stats fetched successfully", data: stats });
+    return res.status(200).json({
+      message: "Dashboard stats fetched successfully",
+      data: {
+        total: Number(stats.total),
+        completed: Number(stats.completed),
+        in_progress: Number(stats.inprogress),
+        pending: Number(stats.pending),
+        overdue: Number(stats.overdue),
+      },
+    });
   } catch (error) {
     return res.status(500).json({
       message: "Error While Fetching Dashboard Stats Please Try Again",
@@ -34,7 +41,12 @@ export const fetchDashboardTrends = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Dashboard Trends fetched successfully",
-      data: trends,
+      data: trends.map((item) => ({
+        period: item.period,
+        completed: Number(item.completed),
+        in_progress: Number(item.in_progress),
+        overdue: Number(item.overdue),
+      })),
     });
   } catch (error) {
     return res.status(500).json({

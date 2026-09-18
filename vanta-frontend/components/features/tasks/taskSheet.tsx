@@ -14,13 +14,13 @@ import { useFormik } from "formik";
 import { toast } from "sonner";
 import { taskSchema } from "@/schemas/taskSchema";
 import { AppDropDown } from "@/components/custom/app-dropdown";
-import { Task } from "@/types/task";
+import { Tasks } from "@/types/task";
 
 interface TaskSheetProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  onSubmitHandler: (values: Task) => void;
-  task?: Task;
+  onSubmitHandler: (values: Tasks) => void;
+  task?: Tasks;
 }
 
 export function TaskSheet({
@@ -33,11 +33,11 @@ export function TaskSheet({
 
   const formik = useFormik({
     initialValues: {
-      id: task?.id || "",
+      task_id: task?.task_id || 0,
       title: task?.title || "",
       description: task?.description || "",
-      priority: task?.priority || "Low",
-      status: task?.status || "Pending",
+      priority: task?.priority || "low",
+      status: task?.status || "pending",
       due_date: task?.due_date || "",
     },
     validationSchema: taskSchema,
@@ -119,9 +119,9 @@ export function TaskSheet({
                     formik.setFieldValue("priority", value)
                   }
                   options={[
-                    { label: "Low", value: "Low" },
-                    { label: "Medium", value: "Medium" },
-                    { label: "High", value: "High" },
+                    { label: "Low", value: "low" },
+                    { label: "Medium", value: "medium" },
+                    { label: "High", value: "high" },
                   ]}
                   error={
                     formik.touched.priority ? formik.errors.priority : undefined
@@ -132,14 +132,14 @@ export function TaskSheet({
                   label="Status"
                   id="status"
                   placeholder="Select Status"
-                  value={formik.values?.status || "Pending"}
+                  value={formik.values?.status || "pending"}
                   onValueChange={(value) =>
                     formik.setFieldValue("status", value)
                   }
                   options={[
-                    { label: "Pending", value: "Pending" },
-                    { label: "In Process", value: "In Process" },
-                    { label: "Done", value: "Done" },
+                    { label: "Pending", value: "pending" },
+                    { label: "In Progress", value: "in_progress" },
+                    { label: "Done", value: "completed" },
                   ]}
                   error={
                     formik.touched.status ? formik.errors.status : undefined

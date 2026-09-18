@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
+import { DashboardTrends } from "@/types/dashboard";
 import {
   Card,
   CardAction,
@@ -52,7 +51,7 @@ const chartConfig = {
     label: "Completed",
     color: "var(--primary)",
   },
-  inProgress: {
+  in_progress: {
     label: "In Progress",
     color: "hsl(210 80% 60%)",
   },
@@ -62,11 +61,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartAreaInteractive() {
-  const [timeRange, setTimeRange] = React.useState("6w");
-
-  const chartData = timeRange === "6m" ? monthlyData : weeklyData;
-
+export function ChartAreaInteractive({
+  chartData,
+  timeRange,
+  onTimeRangeChange,
+}: {
+  chartData: DashboardTrends[];
+  timeRange: string;
+  onTimeRangeChange: (value: string) => void;
+}) {
   return (
     <Card className="@container/card rounded-lg h-full">
       <CardHeader>
@@ -78,7 +81,7 @@ export function ChartAreaInteractive() {
           <span className="@[540px]/card:hidden">Task breakdown</span>
         </CardDescription>
         <CardAction>
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select value={timeRange} onValueChange={onTimeRangeChange}>
             <SelectTrigger
               className="w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
               size="sm"
@@ -100,12 +103,12 @@ export function ChartAreaInteractive() {
       <CardContent className="px-2 pt-2 sm:px-6 sm:pt-4">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[240px] w-full"
+          className="aspect-auto h-[250px] w-full"
         >
-          <BarChart data={chartData} barCategoryGap="30%" barGap={3}>
+          <BarChart data={chartData ?? []} barCategoryGap="30%" barGap={3}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
-              dataKey="week"
+              dataKey="period"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -129,7 +132,7 @@ export function ChartAreaInteractive() {
               radius={[4, 4, 0, 0]}
             />
             <Bar
-              dataKey="inProgress"
+              dataKey="in_progress"
               fill="var(--color-inProgress)"
               radius={[4, 4, 0, 0]}
             />

@@ -1,9 +1,16 @@
+"use client";
+
 import { AlertTriangle, CalendarDays, TrendingUp, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { AtriskTaskListProps } from "@/types/dashboard";
+import { AtriskTaskItem } from "@/types/dashboard";
 import { Progress } from "@/components/ui/progress";
+import { formatDate } from "@/lib/dateFormater";
 
-export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
+export function AtRiskTaskList({
+  atRiskTasks,
+}: {
+  atRiskTasks: AtriskTaskItem[];
+}) {
   return (
     <div className="col-span-1 border border-border rounded-lg bg-card shadow-sm flex flex-col">
       {/* Header */}
@@ -18,11 +25,11 @@ export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
         </Badge>
       </div>
       {/* Task List */}
-      <div className="flex flex-col gap-0 flex-1 divide-y divide-border overflow-auto">
-        {atRiskTasks.map((task, idx) => (
+      <div className="flex flex-col gap-0 flex-1 divide-y divide-border max-h-[47vh] overflow-auto">
+        {atRiskTasks.map((task) => (
           <div
-            key={idx}
-            className="flex flex-col gap-2 px-4 py-3 hover:bg-muted/30 transition-colors"
+            key={task.task_id}
+            className="flex flex-col gap-2 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer "
           >
             {/* Title row */}
             <div className="flex items-start justify-between gap-2">
@@ -30,9 +37,7 @@ export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
                 {task.title}
               </p>
               <Badge
-                variant={
-                  task.priority === "Critical" ? "destructive" : "secondary"
-                }
+                variant={task.priority === "high" ? "destructive" : "secondary"}
                 className="rounded-md text-[10px] px-1.5 py-0.5 shrink-0"
               >
                 {task.priority}
@@ -42,11 +47,11 @@ export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <User className="size-3" />
-                {task.assignee}
+                {task.assigned_to || "me"}
               </span>
               <span className="flex items-center gap-1">
                 <CalendarDays className="size-3" />
-                {task.dueDate}
+                {formatDate(task.due_date)}
               </span>
             </div>
             {/* Risk bar */}
@@ -58,24 +63,24 @@ export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
                 </span>
                 <span
                   className={`text-[11px] font-semibold ${
-                    task.riskLevel >= 80
+                    task.risk_score >= 80
                       ? "text-destructive"
-                      : task.riskLevel >= 60
+                      : task.risk_score >= 60
                         ? "text-amber-500"
                         : "text-emerald-500"
                   }`}
                 >
-                  {task.riskLevel}%
+                  {task.risk_score}%
                 </span>
               </div>
 
               <Progress
-                value={task.riskLevel}
+                value={task.risk_score}
                 className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
                 indicatorClassName={`${
-                  task.riskLevel >= 80
+                  task.risk_score >= 80
                     ? "bg-red-500"
-                    : task.riskLevel >= 60
+                    : task.risk_score >= 60
                       ? "bg-yellow-500"
                       : "bg-green-500"
                 }`}
@@ -94,9 +99,9 @@ export function AtRiskTaskList({ atRiskTasks }: AtriskTaskListProps) {
                 />
               </div> */}
             </div>
-            {task.daysOverdue > 0 && (
+            {task.daysUntilDue < 0 && (
               <p className="text-[11px] font-medium text-destructive">
-                ⚠ {task.daysOverdue} day{task.daysOverdue > 1 ? "s" : ""}{" "}
+                ⚠ {task.daysUntilDue} day{task.daysUntilDue > 1 ? "s" : ""}{" "}
                 overdue
               </p>
             )}

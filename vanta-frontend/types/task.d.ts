@@ -1,15 +1,17 @@
-export type Priority = "High" | "Medium" | "Low";
-export type Status = "Pending" | "In Process" | "Done";
+import { taskStatus } from "@/types/dashboard";
 
-export interface Task {
-  id: string;
+export type Priority = "high" | "medium" | "low";
+export type Status = taskStatus;
+
+export interface Tasks {
+  task_id: number;
   title: string;
   description: string;
   priority: Priority;
+  status: taskStatus;
   due_date: string;
-  assignee?: string;
-  status?: Status;
-  workspace?: string;
+  assignee_name?: string | null;
+  workspace_name?: string | null;
 }
 
 export interface SubTask {
@@ -34,7 +36,7 @@ export interface TaskDetailModalProps {
 }
 
 export interface TaskTableProps {
-  data?: Task[];
+  data?: Tasks[];
   onView?: (task: Task) => void;
   onEdit?: (id: Task) => void;
   onDelete?: (id: Task) => void;

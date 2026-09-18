@@ -20,7 +20,7 @@ api.interceptors.response.use(
     // _retry is not present in the config object
     // originalRequest._retry === undefined => !undefined => true
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url?.includes("/auth/refresh")) {
+      if (originalRequest.url?.includes("/refresh")) {
         window.location.href = "/login";
         return Promise.reject(error);
       }
@@ -28,7 +28,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await api.post("/auth/refresh");
+        await api.post("/refresh");
 
         return api(originalRequest);
       } catch (refreshError) {

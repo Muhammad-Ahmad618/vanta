@@ -48,3 +48,23 @@ export const useLogin = () => {
     },
   });
 };
+
+export const useSignOut = () => {
+  const router = useRouter();
+  const clearUser = useAuthStore((state) => state.clearUser);
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.post("/auth/logout");
+      return res.data;
+    },
+    onSuccess: () => {
+      clearUser();
+      toast.success("Logout successful");
+      router.push("/login");
+    },
+    onError: (error: ApiError) => {
+      toast.error(error.response?.data?.message || "Logout failed");
+    },
+  });
+};

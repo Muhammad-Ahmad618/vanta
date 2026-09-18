@@ -23,6 +23,8 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { UserCircleIcon, SignOutIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { useSignOut } from "@/hooks/auth/auth";
+import { Loader2 } from "lucide-react";
 
 export function NavUser({
   user,
@@ -36,10 +38,13 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { mutate: signOut, isPending } = useSignOut();
 
   const handleLogout = () => {
-    // TODO: add auth sign-out logic here before redirecting
-    router.push("/login");
+    setTimeout(() => {
+      setShowLogoutModal(false);
+    }, 500);
+    signOut();
   };
 
   return (
@@ -126,8 +131,15 @@ export function NavUser({
               variant="destructive"
               onClick={handleLogout}
               className="w-full rounded-xl h-10 font-medium"
+              disabled={isPending}
             >
-              Sign out
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Signing out ...
+                </span>
+              ) : (
+                "Sign out"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

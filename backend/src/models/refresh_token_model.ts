@@ -16,7 +16,7 @@ export const saveRefreshToken = async (userId: number, token: string) => {
 export const deleteRefreshToken = async (userId: number) => {
   try {
     const result = await pool.query(
-      "DELETE FROM refresh_token WHERE user_id = $1",
+      "DELETE FROM refresh_tokens WHERE user_id = $1 RETURNING *",
       [userId],
     );
     return result.rows[0];
@@ -29,7 +29,7 @@ export const deleteRefreshToken = async (userId: number) => {
 export const findRefreshToken = async (token: string) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM refresh_token WHERE token = $1",
+      "SELECT * FROM refresh_tokens WHERE token = $1",
       [token],
     );
     return result.rows[0];

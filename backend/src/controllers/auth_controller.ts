@@ -240,11 +240,7 @@ export const logout = async (req: Request, res: Response) => {
 
     const { id } = req.user;
 
-    const result = await deleteRefreshToken(id);
-
-    if (!result) {
-      return res.status(400).json({ message: "Error while logging out" });
-    }
+    await deleteRefreshToken(id);
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");

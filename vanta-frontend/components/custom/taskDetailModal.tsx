@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Task, Priority, Status } from "@/types/task";
+import { Tasks, Priority, Status } from "@/types/task";
 import {
   Sparkles,
   Send,
@@ -85,7 +85,7 @@ export function TaskDetailModal({
   task,
 }: TaskDetailModalProps) {
   // Local task state to enable editing
-  const [localTask, setLocalTask] = useState<Task | undefined>(task);
+  const [localTask, setLocalTask] = useState<Tasks | undefined>(task);
   const [comments, setComments] = useState(() => getMockComments(task?.id));
   const [newComment, setNewComment] = useState("");
 
@@ -107,9 +107,9 @@ export function TaskDetailModal({
   // Status Icon Selector
   const getStatusIcon = (status: Status) => {
     switch (status) {
-      case "Done":
+      case "completed":
         return <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />;
-      case "In Process":
+      case "in_progress":
         return (
           <CircleDot className="h-4 w-4 text-blue-500 animate-pulse shrink-0" />
         );
@@ -121,9 +121,9 @@ export function TaskDetailModal({
   // Priority Badge styling
   const getPriorityColor = (priority: Priority) => {
     switch (priority) {
-      case "High":
+      case "high":
         return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/50";
-      case "Medium":
+      case "medium":
         return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50";
       default:
         return "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/30 dark:text-slate-400 dark:border-slate-800/50";
@@ -282,7 +282,7 @@ export function TaskDetailModal({
     toast.success("Comment posted");
   };
 
-  const handleFieldChange = (name: keyof Task, value: string) => {
+  const handleFieldChange = (name: keyof Tasks, value: string) => {
     setLocalTask((prev) => (prev ? { ...prev, [name]: value } : prev));
   };
 
@@ -305,12 +305,12 @@ export function TaskDetailModal({
                 variant="outline"
                 className="font-mono text-xs px-2 py-0.5 border-primary/20 text-primary bg-primary/5 rounded-md"
               >
-                {localTask.id}
+                {localTask.task_id}
               </Badge>
               <span className="text-xs text-muted-foreground">/</span>
               <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                 <Briefcase className="h-3.5 w-3.5 text-muted-foreground/70" />
-                {localTask.workspace || "General Tasks"}
+                {localTask.workspace_name || "General Tasks"}
               </span>
             </div>
           </div>
@@ -358,7 +358,7 @@ export function TaskDetailModal({
                       <option value="Done">Done</option>
                     </select>
                     <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-1.5">
-                      {getStatusIcon(localTask.status || "Pending")}
+                      {getStatusIcon(localTask.status || "pending")}
                     </div>
                   </div>
                 </div>
@@ -409,7 +409,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.assignee || ""}
+                    value={localTask.assignee_name || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >
@@ -428,7 +428,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.workspace || ""}
+                    value={localTask.workspace_name || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >

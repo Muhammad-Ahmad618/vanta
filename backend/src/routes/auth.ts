@@ -14,6 +14,7 @@ import {
   resetPasswordValidator,
 } from "@/validator/auth_validator.js";
 import { validator } from "@/middleware/validator.js";
+import { protect } from "@/middleware/authentication.js";
 
 const router = express.Router();
 
@@ -31,7 +32,7 @@ router.post(
   validator,
   resetPassword,
 );
-router.post("/auth/logout", logout);
+router.post("/auth/logout", protect, logout);
 router.post("/refresh", refresh);
 
 export default router;

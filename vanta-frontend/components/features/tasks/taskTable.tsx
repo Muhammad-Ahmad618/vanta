@@ -18,56 +18,55 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Task, TaskTableProps } from "@/types/task";
+import { Tasks, TaskTableProps } from "@/types/task";
 import { StatusLabel } from "@/components/custom/status-label";
 
-export const initialTasks: Task[] = [
+export const initialTasks: Tasks[] = [
   {
-    id: "T-1",
+    task_id: 1,
     title: "Payment Gateway Integration",
     description: "Integrate Stripe payment gateway",
-    priority: "High",
+    priority: "high",
     due_date: "2026-06-29",
-    assignee: "James Smith",
-    status: "Pending",
-    workspace: "Workspace 1",
+    assignee_name: "James Smith",
+    status: "pending",
+    workspace_name: "Workspace 1",
   },
   {
-    id: "T-2",
+    task_id: 2,
     title: "User Authentication Bugfix",
     description: "Fix user authentication bug",
-    priority: "Medium",
+    priority: "medium",
     due_date: "2026-06-30",
-    assignee: "Eddie Lake",
-    status: "In Process",
-    workspace: "Workspace 2",
+    assignee_name: "Eddie Lake",
+    status: "in_progress",
+    workspace_name: "Workspace 2",
   },
   {
-    id: "T-3",
+    task_id: 3,
     title: "Executive Summary Narrative",
     description: "Write executive summary",
-    priority: "High",
+    priority: "high",
     due_date: "2026-07-02",
-    assignee: "Eddie Lake",
-    status: "Done",
+    assignee_name: "Eddie Lake",
+    status: "completed",
   },
   {
-    id: "T-4",
+    task_id: 4,
     title: "Design System Implementation",
     description: "Implement design system",
-    priority: "Low",
+    priority: "low",
     due_date: "2026-07-15",
-    status: "In Process",
-    workspace: "Workspace 2",
+    status: "in_progress",
   },
   {
-    id: "T-5",
+    task_id: 5,
     title: "Compliance Documentation",
     description: "Write compliance documentation",
-    priority: "Medium",
+    priority: "medium",
     due_date: "2026-08-20",
-    assignee: "Sarah Chen",
-    status: "Pending",
+    assignee_name: "Sarah Chen",
+    status: "pending",
   },
 ];
 
@@ -84,10 +83,10 @@ const columns = [
 ] as const;
 
 interface TaskRowProps {
-  task: Task;
-  onView?: (task: Task) => void;
-  onEdit?: (id: Task) => void;
-  onDelete?: (id: Task) => void;
+  task: Tasks;
+  onView?: (task: Tasks) => void;
+  onEdit?: (id: Tasks) => void;
+  onDelete?: (id: Tasks) => void;
 }
 
 function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
@@ -96,7 +95,9 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
       className="hover:bg-muted/20 text-[13px] overflow-hidden
     "
     >
-      <TableCell className="py-3 px-5 whitespace-nowrap">{task?.id}</TableCell>
+      <TableCell className="py-3 px-5 whitespace-nowrap">
+        {task?.task_id}
+      </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
         {task.title}
       </TableCell>
@@ -106,9 +107,9 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
       <TableCell className="py-3 px-5 whitespace-nowrap">
         <Badge
           variant={
-            task.priority === "High"
+            task.priority === "high"
               ? "destructive"
-              : task.priority === "Medium"
+              : task.priority === "medium"
                 ? "default"
                 : "secondary"
           }
@@ -118,10 +119,10 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
         </Badge>
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task?.assignee || "-"}
+        {task?.assignee_name || "-"}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task?.workspace || "-"}
+        {task?.workspace_name || "-"}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
         {task?.due_date}
@@ -177,7 +178,7 @@ export function TaskTable({
         <TableBody>
           {data.map((task) => (
             <TaskRow
-              key={task.id}
+              key={task.task_id}
               task={task}
               onView={onView}
               onEdit={onEdit}
