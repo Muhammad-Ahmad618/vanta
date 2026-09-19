@@ -9,7 +9,6 @@ import {
 } from "@/models/users_model.js";
 import { Request, Response } from "express";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import {
   deleteToken,
   getTokenInfo,
@@ -20,14 +19,8 @@ import {
   findRefreshToken,
   saveRefreshToken,
 } from "@/models/refresh_token_model.js";
+import { transporter } from "@/services/transporter.js";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-  },
-});
 // Login Logic
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
