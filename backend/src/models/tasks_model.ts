@@ -220,7 +220,7 @@ export const getDailyFocusTasks = async (user_id: number) => {
      WHERE (user_id = $1 OR assigned_to = $1)
      AND deleted_at is NULL
      AND status IN ('pending', 'in_progress')
-     AND due_date <= CURRENT_DATE += INTERVAL '1 day'
+     AND due_date <= CURRENT_DATE + INTERVAL '1 day'
      ORDER BY
      CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
      due_date ASC`,

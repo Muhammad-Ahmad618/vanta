@@ -59,17 +59,19 @@ export const login = async (req: Request, res: Response) => {
 
     await saveRefreshToken(user.id, refreshtoken);
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", accesstoken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshtoken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

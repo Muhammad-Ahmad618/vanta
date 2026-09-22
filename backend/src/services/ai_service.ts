@@ -3,9 +3,31 @@ import { task, taskRiskReport } from "@/Types/tasks.js";
 
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_AI || "");
 const model = genAi.getGenerativeModel(
-  { model: "gemini-flash-latest" },
+  { model: "gemini-3.5-flash-lite" },
   { apiVersion: "v1beta" },
 );
+
+/** Retry a Gemini API call up to `maxAttempts` times on 503 Service Unavailable. */
+const withRetry = async <T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 1000,
+): Promise<T> => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const is503 = error?.status === 503;
+      if (!is503 || attempt === maxAttempts) throw error;
+      const delay = baseDelayMs * 2 ** (attempt - 1);
+      console.warn(
+        `Gemini 503 – retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Unreachable");
+};
 
 export const generateDailyFocus = async (tasks: task[]): Promise<string> => {
   if (tasks.length === 0) {
@@ -36,7 +58,7 @@ export const generateDailyFocus = async (tasks: task[]): Promise<string> => {
     Keep the tone professional and friendly. Be concise and actionable.`;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     return result.response.text();
   } catch (error) {
     console.log("Error generating daily focus", error);
@@ -69,7 +91,7 @@ export const generateTaskBreakDown = async (
     Priority must be one of: high, medium, low.`;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text().trim();
     const parsed = JSON.parse(text);
     return parsed;
@@ -137,7 +159,7 @@ Respond ONLY with a valid JSON object, no explanation, no markdown, no backticks
 Only include task_id numbers in the arrays.`;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text().trim();
     const parsed = JSON.parse(text);
 

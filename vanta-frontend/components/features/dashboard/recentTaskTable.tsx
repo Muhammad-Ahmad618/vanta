@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Info, CheckCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -105,15 +105,22 @@ export function RecentTaskTable({
                         <EllipsisVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-md p-2">
+                    <DropdownMenuContent
+                      align="end"
+                      className="rounded-md p-2 w-40 max-w-full"
+                    >
                       <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={() => onView(task)}>
-                          View Details
+                        <DropdownMenuItem
+                          onClick={() => onView(task)}
+                          className="rounded-sm"
+                        >
+                          <Info className="size-4 mr-2" /> View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleMarkAsDone(task)}
+                          className="rounded-sm"
                         >
-                          Mark as Done
+                          <CheckCheck className="size-4 mr-2" /> Mark as Done
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>

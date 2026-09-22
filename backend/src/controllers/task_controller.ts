@@ -21,6 +21,7 @@ import {
   getActiveTasksById,
   updateDueDate,
 } from "@/models/tasks_model.js";
+import { ApiError } from "@/Types/error.js";
 
 // Fetch All Tasks Accross DB
 export const fetchAllTasks = async (req: Request, res: Response) => {
@@ -367,10 +368,18 @@ export const getDailyFocus = async (req: Request, res: Response) => {
       task_analyzed: tasks.length,
       data: focus,
     });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error While Generating Daily Focus Please Try Again" });
+  } catch (error: unknown) {
+    const isAiUnavailable =
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      error.status === 503;
+
+    return res.status(isAiUnavailable ? 503 : 500).json({
+      message: isAiUnavailable
+        ? "AI service is temporarily unavailable. Please try again in a moment."
+        : "Error While Generating Daily Focus Please Try Again",
+    });
   }
 };
 

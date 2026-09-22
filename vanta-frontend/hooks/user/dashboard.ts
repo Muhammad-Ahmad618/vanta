@@ -52,3 +52,13 @@ export const useGetRecentTasks = () => {
     refetchInterval: 1000 * 60 * 5,
   });
 };
+
+export const useGetDailyFocus = () => {
+  return useQuery({
+    queryKey: ["daily-focus"],
+    queryFn: async () => {
+      const { data: response } = await api.get("/task/focus");
+      return response;
+    },
+  });
+};
