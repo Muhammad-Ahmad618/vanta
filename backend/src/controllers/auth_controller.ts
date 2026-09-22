@@ -19,7 +19,7 @@ import {
   findRefreshToken,
   saveRefreshToken,
 } from "@/models/refresh_token_model.js";
-import { transporter } from "@/services/transporter.js";
+import { emailjs } from "@/services/transporter.js";
 
 // Login Logic
 export const login = async (req: Request, res: Response) => {
@@ -150,17 +150,21 @@ export const forgotPassword = async (req: Request, res: Response) => {
     if (storeToken) {
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-      await transporter.sendMail({
-        from: `"Your App" <${process.env.EMAIL}>`,
-        to: email,
-        subject: "Password Reset Request",
-        html: `
-        <h2>Password Reset</h2>
-        <p>Click the link below to reset your password. It expires in 1 hour.</p>
-        <a href="${resetUrl}" style="color: blue; text-decoration: underline;">Reset Password</a>
-        <p>If you didn't request this, ignore this email.</p>
-      `,
-      });
+      try {
+        await emailjs.send(
+          process.env.EMAILJS_SERVICE_ID!,
+          process.env.EMAILJS_TEMPLATE_ID!,
+          {
+            to_email: email,
+            reset_url: resetUrl,
+          },
+        );
+      } catch (error) {
+        console.log("Error", error);
+        return res
+          .status(500)
+          .json({ message: "Internal server error. Please try again." });
+      }
 
       return res
         .status(200)

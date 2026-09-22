@@ -1,30 +1,8 @@
-import nodemailer from "nodemailer";
+import emailjs from "@emailjs/nodejs";
 
-export const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-  },
+emailjs.init({
+  publicKey: process.env.EMAILJS_PUBLIC_KEY!,
+  privateKey: process.env.EMAILJS_PRIVATE_KEY!,
 });
 
-// export const sendFeedbackMail = async (
-//   username: string,
-//   email: string,
-//   message: string,
-//   type: "bug" | "general" | "feature",
-// ) => {
-//   await transporter.sendMail({
-//     from: process.env.EMAIL,
-//     to: process.env.EMAIL,
-//     replyTo: email,
-//     subject: `[Vanta Feedback] ${type.toUpperCase()} from ${username}`,
-//     html: `
-//       <h2>New Feedback Received</h2>
-//       <p><strong>From:</strong> ${username} (${email})</p>
-//       <p><strong>Type:</strong> ${type}</p>
-//       <p><strong>Message:</strong></p>
-//       <p>${message}</p>
-//     `,
-//   });
-// };
+export { emailjs };

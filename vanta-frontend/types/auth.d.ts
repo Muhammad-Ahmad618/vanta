@@ -19,7 +19,7 @@ export interface forgotPasswordResponse {
 
 export interface resetPasswordPayload {
   token: string;
-  password: string;
+  newPassword: string;
 }
 
 export interface authUser {

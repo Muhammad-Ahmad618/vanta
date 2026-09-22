@@ -7,12 +7,12 @@ import { useFormik } from "formik";
 import { resetPasswordSchema } from "@/schemas/authSchema";
 import { Loader2, Lock } from "lucide-react";
 import { useResetPassword } from "@/hooks/auth/forgotPassword";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 function ResetPasswordForm() {
   const { mutate: resetPassword, isPending } = useResetPassword();
-  const params = useParams<{ token: string }>();
-  const token = params.token;
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
   const formik = useFormik({
     initialValues: {
@@ -20,10 +20,22 @@ function ResetPasswordForm() {
       confirmPassword: "",
     },
     validationSchema: resetPasswordSchema,
-    onSubmit: (password) => {
-      resetPassword({ ...password, token });
+    onSubmit: (values) => {
+      if (!token) return;
+      resetPassword({ newPassword: values?.password, token });
     },
   });
+
+  if (!token) {
+    return (
+      <div className="w-full p-10 border rounded-2xl">
+        <FormHeader
+          title="Invalid Link"
+          description="This password reset link is invalid or missing. Please request a new one."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full p-10 border rounded-2xl">
