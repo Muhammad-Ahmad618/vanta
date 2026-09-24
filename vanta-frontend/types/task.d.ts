@@ -3,6 +3,14 @@ import { taskStatus } from "@/types/dashboard";
 export type Priority = "high" | "medium" | "low";
 export type Status = taskStatus;
 
+export interface TaskSheetProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSubmitHandler: (values: Tasks) => Promise<void> | void;
+  task?: Tasks;
+  isPending?: boolean;
+}
+
 export interface Tasks {
   task_id: number;
   title: string;
@@ -10,8 +18,8 @@ export interface Tasks {
   priority: Priority;
   status: taskStatus;
   due_date: string;
-  assignee_name?: string | null;
-  workspace_name?: string | null;
+  assignee?: string | null;
+  workspace?: string | null;
 }
 
 export interface SubTask {
@@ -37,7 +45,42 @@ export interface TaskDetailModalProps {
 
 export interface TaskTableProps {
   data?: Tasks[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
   onView?: (task: Task) => void;
   onEdit?: (id: Task) => void;
   onDelete?: (id: Task) => void;
+}
+
+export interface TasksResponse {
+  data: Tasks[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface CreateTaskPayload {
+  title: string;
+  description: string;
+  priority: Priority;
+  status: taskStatus;
+  due_date: string;
+}
+
+export interface UpdateTaskPayload {
+  task_id: number;
+  title: string;
+  description: string;
+  priority: Priority;
+  status: taskStatus;
+  due_date: string;
 }

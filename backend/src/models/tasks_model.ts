@@ -45,7 +45,8 @@ export const getMyTasks = async (
       tasks.status,
       tasks.due_date,
       users.username AS assignee ,
-      workspace.name AS workspace
+      workspace.name AS workspace,
+      COUNT(*) OVER() AS total_count 
       FROM tasks
       LEFT JOIN users ON tasks.assigned_to = users.id
       LEFT JOIN workspace ON tasks.workspace_id = workspace.id

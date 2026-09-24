@@ -21,7 +21,6 @@ import {
   getActiveTasksById,
   updateDueDate,
 } from "@/models/tasks_model.js";
-import { ApiError } from "@/Types/error.js";
 
 // Fetch All Tasks Accross DB
 export const fetchAllTasks = async (req: Request, res: Response) => {
@@ -65,9 +64,18 @@ export const fetchMyTasks = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "No tasks found for this user" });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Tasks fetched successfully", data: tasks });
+    const total = Number(tasks[0].total_count || 0);
+
+    return res.status(200).json({
+      message: "Tasks fetched successfully",
+      data: tasks,
+      pagination: {
+        page: Math.floor(offsetNum / limitNum) + 1,
+        limit: limitNum,
+        total: total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
   } catch (error) {
     return res
       .status(500)

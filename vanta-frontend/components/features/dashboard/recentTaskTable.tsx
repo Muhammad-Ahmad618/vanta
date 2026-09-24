@@ -45,7 +45,6 @@ export function RecentTaskTable({
             <TableRow className="hover:bg-transparent">
               <TableHead className="px-5 font-semibold w-14">Id</TableHead>
               <TableHead className="px-5 font-semibold">Title</TableHead>
-              <TableHead className="px-4 font-semibold">Description</TableHead>
               <TableHead className="px-4 font-semibold">Priority</TableHead>
               <TableHead className="px-4 font-semibold">Due Date</TableHead>
               <TableHead className="px-4 font-semibold">Assignee</TableHead>
@@ -64,9 +63,6 @@ export function RecentTaskTable({
                 </TableCell>
                 <TableCell className="font-medium px-5 py-3">
                   {task.title}
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  {task.description || "-"}
                 </TableCell>
                 <TableCell className="px-4 py-3">
                   <Badge

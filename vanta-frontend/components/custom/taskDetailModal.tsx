@@ -310,7 +310,7 @@ export function TaskDetailModal({
               <span className="text-xs text-muted-foreground">/</span>
               <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                 <Briefcase className="h-3.5 w-3.5 text-muted-foreground/70" />
-                {localTask.workspace_name || "General Tasks"}
+                {localTask.workspace || "General Tasks"}
               </span>
             </div>
           </div>
@@ -409,7 +409,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.assignee_name || ""}
+                    value={localTask.assignee || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >
@@ -428,7 +428,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.workspace_name || ""}
+                    value={localTask.workspace || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >

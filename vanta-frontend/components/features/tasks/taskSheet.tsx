@@ -11,23 +11,17 @@ import { AppInputField } from "@/components/custom/appInputField";
 import { AppTextareaField } from "@/components/custom/appTextareaField";
 import { Button } from "@/components/ui/button";
 import { useFormik } from "formik";
-import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { taskSchema } from "@/schemas/taskSchema";
 import { AppDropDown } from "@/components/custom/app-dropdown";
-import { Tasks } from "@/types/task";
-
-interface TaskSheetProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  onSubmitHandler: (values: Tasks) => void;
-  task?: Tasks;
-}
+import { TaskSheetProps } from "@/types/task";
 
 export function TaskSheet({
   open,
   setOpen,
   onSubmitHandler,
   task,
+  isPending,
 }: TaskSheetProps) {
   const isUpdate = !!task;
 
@@ -41,12 +35,11 @@ export function TaskSheet({
       due_date: task?.due_date || "",
     },
     validationSchema: taskSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       if (onSubmitHandler) {
-        onSubmitHandler(values);
+        await onSubmitHandler(values);
       } else {
         console.log(values);
-        toast.success("Task Created Successfully");
       }
 
       formik.resetForm();
@@ -152,15 +145,20 @@ export function TaskSheet({
                     type="submit"
                     variant="default"
                     className="w-full h-10 rounded-md font-semibold text-sm shadow-sm cursor-pointer"
-                    disabled={formik.isSubmitting}
+                    disabled={isPending}
                   >
-                    {formik.isSubmitting
-                      ? isUpdate
-                        ? "Saving..."
-                        : "Creating..."
-                      : isUpdate
-                        ? "Save Changes"
-                        : "Create Task"}
+                    <span className="flex items-center gap-2">
+                      {isPending && (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      )}
+                      {isPending
+                        ? isUpdate
+                          ? "Saving..."
+                          : "Creating..."
+                        : isUpdate
+                          ? "Save Changes"
+                          : "Create Task"}
+                    </span>
                   </Button>
                 </div>
               </form>

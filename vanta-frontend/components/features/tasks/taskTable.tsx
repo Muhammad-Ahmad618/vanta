@@ -14,66 +14,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { EllipsisVertical } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatDate } from "@/lib/dateFormater";
+import {
+  EllipsisVertical,
+  ChevronLeft,
+  ChevronRight,
+  Trash,
+  Info,
+  SquarePen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tasks, TaskTableProps } from "@/types/task";
 import { StatusLabel } from "@/components/custom/status-label";
 
-export const initialTasks: Tasks[] = [
-  {
-    task_id: 1,
-    title: "Payment Gateway Integration",
-    description: "Integrate Stripe payment gateway",
-    priority: "high",
-    due_date: "2026-06-29",
-    assignee_name: "James Smith",
-    status: "pending",
-    workspace_name: "Workspace 1",
-  },
-  {
-    task_id: 2,
-    title: "User Authentication Bugfix",
-    description: "Fix user authentication bug",
-    priority: "medium",
-    due_date: "2026-06-30",
-    assignee_name: "Eddie Lake",
-    status: "in_progress",
-    workspace_name: "Workspace 2",
-  },
-  {
-    task_id: 3,
-    title: "Executive Summary Narrative",
-    description: "Write executive summary",
-    priority: "high",
-    due_date: "2026-07-02",
-    assignee_name: "Eddie Lake",
-    status: "completed",
-  },
-  {
-    task_id: 4,
-    title: "Design System Implementation",
-    description: "Implement design system",
-    priority: "low",
-    due_date: "2026-07-15",
-    status: "in_progress",
-  },
-  {
-    task_id: 5,
-    title: "Compliance Documentation",
-    description: "Write compliance documentation",
-    priority: "medium",
-    due_date: "2026-08-20",
-    assignee_name: "Sarah Chen",
-    status: "pending",
-  },
-];
-
 const columns = [
   "id",
   "Title",
-  "Description",
   "Priority",
   "Assignee",
   "Workspace",
@@ -102,9 +66,6 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
         {task.title}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task.description || "-"}
-      </TableCell>
-      <TableCell className="py-3 px-5 whitespace-nowrap">
         <Badge
           variant={
             task.priority === "high"
@@ -119,13 +80,13 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
         </Badge>
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task?.assignee_name || "-"}
+        {task?.assignee || "-"}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task?.workspace_name || "-"}
+        {task?.workspace || "-"}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
-        {task?.due_date}
+        {formatDate(task?.due_date)}
       </TableCell>
       <TableCell className="py-3 px-5 whitespace-nowrap">
         <StatusLabel status={task?.status || "Pending"} />
@@ -137,15 +98,25 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
               <EllipsisVertical className="h-4 w-4 " />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-md p-2">
-            <DropdownMenuItem onClick={() => onView?.(task)}>
-              View Details
+          <DropdownMenuContent align="end" className="rounded-md p-2 w-40">
+            <DropdownMenuItem
+              onClick={() => onView?.(task)}
+              className="cursor-pointer h-8 rounded-sm"
+            >
+              <Info className="h-4 w-4 mr-2" /> View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit?.(task)}>
-              Edit Task
+            <DropdownMenuItem
+              onClick={() => onEdit?.(task)}
+              className="cursor-pointer h-8 rounded-sm"
+            >
+              <SquarePen className="h-4 w-4 mr-2" /> Edit Task
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete?.(task)}>
-              Delete Task
+            <DropdownMenuItem
+              onClick={() => onDelete?.(task)}
+              variant="destructive"
+              className="cursor-pointer h-8 rounded-sm"
+            >
+              <Trash className="h-4 w-4 mr-2" /> Delete Task
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -155,11 +126,23 @@ function TaskRow({ task, onView, onEdit, onDelete }: TaskRowProps) {
 }
 
 export function TaskTable({
-  data = initialTasks,
+  data,
+  pagination,
+  onPageChange,
+  onLimitChange,
   onView,
   onEdit,
   onDelete,
 }: TaskTableProps) {
+  const page = pagination?.page || 1;
+  const limit = pagination?.limit || 10;
+  const total = pagination?.total || 0;
+  const totalPages = pagination?.totalPages || 1;
+
+  // Calculate row boundaries for display (e.g. "1-10 of 45")
+  const startResult = total === 0 ? 0 : (page - 1) * limit + 1;
+  const endResult = Math.min(page * limit, total);
+
   return (
     <div className="mt-5 rounded-md border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
       <Table className="w-full">
@@ -176,7 +159,7 @@ export function TaskTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((task) => (
+          {data?.map((task) => (
             <TaskRow
               key={task.task_id}
               task={task}
@@ -187,6 +170,75 @@ export function TaskTable({
           ))}
         </TableBody>
       </Table>
+      <div className="flex flex-col gap-4 border-t border-border/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Rows per page + result count */}
+        <div className="flex items-center justify-between gap-4 sm:justify-start">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="hidden sm:inline text-xs">Rows per page</span>
+            <span className="sm:hidden">Show</span>
+
+            <Select
+              value={limit.toString()}
+              onValueChange={(val) => onLimitChange?.(Number(val))}
+            >
+              <SelectTrigger className="h-8 w-[68px] rounded-md text-xs">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="text-xs text-muted-foreground sm:hidden">
+            {startResult}–{endResult} of {total}
+          </div>
+        </div>
+
+        {/* Desktop result count */}
+        <div className="hidden text-xs text-muted-foreground sm:block">
+          Showing{" "}
+          <span className="font-medium text-foreground">{startResult}</span> to{" "}
+          <span className="font-medium text-foreground">{endResult}</span> of{" "}
+          <span className="font-medium text-foreground">{total}</span> results
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={page <= 1}
+            onClick={() => onPageChange?.(page - 1)}
+            className="h-8 w-8 rounded-md text-muted-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous page</span>
+          </Button>
+
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8 min-w-8 rounded-md px-2 text-xs"
+          >
+            {page}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange?.(page + 1)}
+            className="h-8 w-8 rounded-md text-muted-foreground"
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next page</span>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
