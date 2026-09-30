@@ -9,7 +9,7 @@ import api from "@/lib/axios";
 
 export const useGetDashboardStats = () => {
   return useQuery<DashboardStatsResponse>({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard", "stats"],
     queryFn: async () => {
       const { data } = await api.get("/dashboard/stats");
       return data;
@@ -20,7 +20,7 @@ export const useGetDashboardStats = () => {
 
 export const useGetTaskTrends = (mode: "weekly" | "monthly") => {
   return useQuery<DashboardTrends[]>({
-    queryKey: ["task-trends", mode],
+    queryKey: ["dashboard", "trends", mode],
     queryFn: async () => {
       const { data: response } = await api.get(
         `/dashboard/trends?mode=${mode}`,
@@ -33,7 +33,7 @@ export const useGetTaskTrends = (mode: "weekly" | "monthly") => {
 
 export const useGetAtRiskTasks = () => {
   return useQuery<AtriskTaskItem[]>({
-    queryKey: ["at-risk-tasks"],
+    queryKey: ["dashboard", "at-risk-tasks"],
     queryFn: async () => {
       const { data: response } = await api.get("/dashboard/atrisk-tasks");
       return response.data;
@@ -44,7 +44,7 @@ export const useGetAtRiskTasks = () => {
 
 export const useGetRecentTasks = () => {
   return useQuery<recentTasks[]>({
-    queryKey: ["recent-tasks"],
+    queryKey: ["dashboard", "recent-tasks"],
     queryFn: async () => {
       const { data: response } = await api.get("/dashboard/recent-tasks");
       return response.data;

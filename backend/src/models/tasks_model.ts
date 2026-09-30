@@ -308,7 +308,7 @@ export const updateDueDate = async (
 ) => {
   try {
     const result = await pool.query(
-      `UPDATE FROM tasks 
+      `UPDATE tasks 
     SET due_date = $3 
     WHERE task_id = $1 AND user_id = $2 AND deleted_at is NULL
     RETURNING *`,
@@ -317,6 +317,26 @@ export const updateDueDate = async (
     return result.rows[0];
   } catch (error) {
     console.log("Error updating due_date", error);
+    throw error;
+  }
+};
+
+export const updatePriority = async (
+  task_id: number,
+  user_id: number,
+  priority: "low" | "medium" | "high",
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE tasks 
+    SET priority = $3 
+    WHERE task_id = $1 AND user_id = $2 AND deleted_at is NULL
+    RETURNING *`,
+      [task_id, user_id, priority],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error updating priority", error);
     throw error;
   }
 };

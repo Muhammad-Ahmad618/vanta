@@ -20,6 +20,7 @@ import {
   getTaskBreakDown,
   getActiveTasksById,
   updateDueDate,
+  updatePriority,
 } from "@/models/tasks_model.js";
 
 // Fetch All Tasks Accross DB
@@ -191,6 +192,37 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error While Updating Task Status Please Try Again" });
+  }
+};
+
+export const updateTaskPriority = async (req: Request, res: Response) => {
+  const task_id = Number(req.params.id);
+  const user_id = Number(req.user?.id);
+  const { priority } = req.body;
+
+  if (!user_id) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+
+  if (!task_id) {
+    return res.status(400).json({
+      message: "Please provide task id",
+    });
+  }
+
+  try {
+    const response = await updatePriority(task_id, user_id, priority);
+
+    return res.status(200).json({
+      message: "Task priority updated successfully",
+      data: response,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error While Updating Task Priority Please Try Again",
+    });
   }
 };
 

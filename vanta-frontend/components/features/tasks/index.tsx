@@ -15,7 +15,6 @@ import { TaskTable } from "@/components/features/tasks/taskTable";
 import { TaskSheet } from "./taskSheet";
 import { TaskDetailModal } from "../../custom/taskDetailModal";
 import { Tasks } from "@/types/task";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   useGetAllTasks,

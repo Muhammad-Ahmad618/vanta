@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   TasksResponse,
-  Tasks,
   CreateTaskPayload,
   UpdateTaskPayload,
+  Priority,
 } from "@/types/task";
 import api from "@/lib/axios";
 import { ApiError } from "next/dist/server/api-utils";
@@ -34,6 +34,11 @@ export const useCreateTask = () => {
       QueryClient.invalidateQueries({
         queryKey: ["tasks"],
       });
+
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
       toast.success("Task created successfully");
     },
     onError: (error: ApiError) => {
@@ -53,6 +58,10 @@ export const useUpdateTask = () => {
     onSuccess: () => {
       QueryClient.invalidateQueries({
         queryKey: ["tasks"],
+      });
+
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
       });
       toast.success("Task updated successfully");
     },
@@ -74,10 +83,111 @@ export const useRemoveTask = () => {
       QueryClient.invalidateQueries({
         queryKey: ["tasks"],
       });
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
       toast.success("Task deleted successfully");
     },
     onError: (error: ApiError) => {
       toast.error(error?.message || "Failed to delete task");
+    },
+  });
+};
+
+export const useUpdateTaskStatus = () => {
+  const QueryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      task_id,
+      status,
+    }: {
+      task_id: number;
+      status: string;
+    }) => {
+      const response = await api.patch(`/task/${task_id}/status`, { status });
+      return response.data;
+    },
+    onSuccess: () => {
+      QueryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      toast.success("Task status updated successfully");
+    },
+
+    onError: (error: ApiError) => {
+      toast.error(error?.message || "Failed to update task status");
+    },
+  });
+};
+
+export const useUpdateTaskDueDate = () => {
+  const QueryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      task_id,
+      due_date,
+    }: {
+      task_id: number;
+      due_date: string;
+    }) => {
+      const response = await api.patch(`/task/${task_id}/due-date`, {
+        due_date,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      QueryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      toast.success("Task due date updated successfully");
+    },
+
+    onError: (error: ApiError) => {
+      toast.error(error?.message || "Failed to update task due date");
+    },
+  });
+};
+
+export const useUpdatePriority = () => {
+  const QueryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      task_id,
+      priority,
+    }: {
+      task_id: number;
+      priority: Priority;
+    }) => {
+      const response = await api.patch(`/task/${task_id}/priority`, {
+        priority,
+      });
+
+      return response.data;
+    },
+    onSuccess: () => {
+      QueryClient.invalidateQueries({
+        queryKey: ["tasks"],
+      });
+      QueryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      toast.success("Task priority updated successfully");
+    },
+
+    onError: (error: ApiError) => {
+      toast.error(error?.message || "Failed to update task priority");
     },
   });
 };

@@ -14,6 +14,7 @@ import {
   breakdownTask,
   getRiskReport,
   updateTaskDueDate,
+  updateTaskPriority,
 } from "../controllers/task_controller.js";
 import { protect } from "@/middleware/authentication.js";
 import { authorize } from "@/middleware/authorization.js";
@@ -25,6 +26,7 @@ router.post("/task", protect, AddNewTask);
 router.put("/task/:id", protect, updateTaskDetails);
 router.patch("/task/:id/status", protect, updateTaskStatus);
 router.patch("/task/:id/due-date", protect, updateTaskDueDate);
+router.patch("/task/:id/priority", protect, updateTaskPriority);
 router.delete("/task/:id", protect, removeTask);
 router.delete("/task/:id/hard", protect, hardDeleteTaskController);
 router.post("/task/recover/:id", protect, recoverTask);

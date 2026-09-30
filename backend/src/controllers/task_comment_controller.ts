@@ -11,29 +11,30 @@ import { getTaskById } from "@/models/tasks_model.js";
 import { Request, Response } from "express";
 
 export const fetchAllCommentsOfATask = async (req: Request, res: Response) => {
-  const task_idNum = Number(req.params.id);
+  const task_id = Number(req.params?.task_id);
   const user_id = Number(req.user?.id);
 
-  if (isNaN(task_idNum)) {
+  if (isNaN(task_id)) {
     return res
       .status(400)
       .json({ message: "Invalid Task ID Please Try Again." });
   }
   try {
-    const task = await getTaskById(task_idNum);
+    const task = await getTaskById(task_id);
 
     if (!task || task.deleted_at !== null) {
       return res.status(404).json({ message: "Task Not Found !" });
     }
 
     if (
-      req.user?.role !== "admin" ||
-      (task.user_id !== user_id && task.assigned_to !== user_id)
+      req.user?.role !== "admin" &&
+      task.user_id !== user_id &&
+      task.assigned_to !== user_id
     ) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const result = await getAllComments(task_idNum);
+    const result = await getAllComments(task_id);
 
     if (result.length === 0) {
       return res.status(200).json({ message: "No Comments Found" });
@@ -50,27 +51,37 @@ export const fetchAllCommentsOfATask = async (req: Request, res: Response) => {
 };
 
 export const AddComment = async (req: Request, res: Response) => {
-  const { task_id } = req.params;
+  const task_id = Number(req.params?.task_id);
   const { content } = req.body;
-  const user_id = req.user?.id;
+  const user_id = Number(req.user?.id);
 
-  const task_idNum = Number(task_id);
-  const user_idNum = Number(user_id);
-
-  if (isNaN(task_idNum) || isNaN(user_idNum)) {
+  if (isNaN(task_id) || isNaN(user_id)) {
     return res
       .status(400)
       .json({ message: "Invalid Task ID or User ID Please Try Again." });
   }
 
-  if (content === "" || content === null || content === undefined) {
+  if (typeof content !== "string" || !content.trim()) {
     return res
       .status(400)
       .json({ message: "Comment Cannot Be Empty Please Try Again." });
   }
 
   try {
-    const result = await createTaskComment(task_idNum, user_idNum, content);
+    const task = await getTaskById(task_id);
+
+    if (!task || task.deleted_at !== null) {
+      return res.status(404).json({ message: "Task Not Found !" });
+    }
+
+    if (
+      req.user?.role !== "admin" &&
+      task.user_id !== user_id &&
+      task.assigned_to !== user_id
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    const result = await createTaskComment(task_id, user_id, content);
     return res
       .status(200)
       .json({ message: "Comment Created Successfully", data: result });

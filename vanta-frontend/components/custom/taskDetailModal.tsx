@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,63 +21,20 @@ import {
   CheckSquare,
   Square,
   MessageSquare,
+  AlertCircle,
+  InboxIcon,
 } from "lucide-react";
-import { SubTask, Comment, TaskDetailModalProps } from "@/types/task";
-
-function getMockComments(id?: string): Comment[] {
-  if (id === "T-1") {
-    return [
-      {
-        id: "c-1",
-        author: "Sarah Chen",
-        avatar: "SC",
-        content:
-          "We should check the currency conversions if we want to expand to Europe.",
-        createdAt: "3 hours ago",
-      },
-      {
-        id: "c-2",
-        author: "James Smith",
-        avatar: "JS",
-        content:
-          "Good point. I've initialized the Stripe SDK settings to check supported currencies dynamically.",
-        createdAt: "1 hour ago",
-      },
-    ];
-  }
-
-  if (id === "T-2") {
-    return [
-      {
-        id: "c-1",
-        author: "Eddie Lake",
-        avatar: "EL",
-        content:
-          "The authentication token fails validation when refreshing on mobile screens.",
-        createdAt: "4 hours ago",
-      },
-      {
-        id: "c-2",
-        author: "Eddie Lake",
-        avatar: "EL",
-        content:
-          "We need to debug whether cookie headers are blocked in CORS configurations.",
-        createdAt: "45 mins ago",
-      },
-    ];
-  }
-
-  return [
-    {
-      id: "c-1",
-      author: "Sarah Chen",
-      avatar: "SC",
-      content:
-        "Please complete this as soon as possible. We have a showcase demo scheduled.",
-      createdAt: "Yesterday",
-    },
-  ];
-}
+import { SubTask, TaskDetailModalProps } from "@/types/task";
+import {
+  useUpdateTaskStatus,
+  useUpdateTaskDueDate,
+  useUpdatePriority,
+} from "@/hooks/user/tasks";
+import {
+  useCreateTaskComment,
+  useGetTaskComments,
+} from "@/hooks/user/task-comments";
+import { formatDate } from "@/lib/dateFormater";
 
 export function TaskDetailModal({
   open,
@@ -86,7 +43,6 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   // Local task state to enable editing
   const [localTask, setLocalTask] = useState<Tasks | undefined>(task);
-  const [comments, setComments] = useState(() => getMockComments(task?.id));
   const [newComment, setNewComment] = useState("");
 
   // AI breakdown states
@@ -95,12 +51,23 @@ export function TaskDetailModal({
   const [generationStep, setGenerationStep] = useState("");
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
 
-  const commentsEndRef = useRef<HTMLDivElement>(null);
+  const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
+  const { mutate: updateTaskDueDate } = useUpdateTaskDueDate();
+  const { mutateAsync: updateTaskPriority } = useUpdatePriority();
+  const { mutateAsync: createTaskComment } = useCreateTaskComment();
+  const {
+    data: commentsRaw,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useGetTaskComments(localTask?.task_id);
 
-  // Auto scroll comments to bottom when new comments are added
-  useEffect(() => {
-    commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [comments]);
+  // Sort ascending so the first comment posted appears at the top
+  const comments = commentsRaw
+    ? [...commentsRaw].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      )
+    : [];
 
   if (!localTask) return null;
 
@@ -266,24 +233,66 @@ export function TaskDetailModal({
   };
 
   // Add Comment Handler
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const newCom: Comment = {
-      id: `c-manual-${Date.now()}`,
-      author: "You",
-      avatar: "YO",
-      content: newComment.trim(),
-      createdAt: "Just now",
-    };
-    setComments((prev) => [...prev, newCom]);
-    setNewComment("");
-    toast.success("Comment posted");
+    try {
+      await createTaskComment({
+        task_id: localTask?.task_id,
+        content: newComment.trim(),
+      });
+      setNewComment("");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleFieldChange = (name: keyof Tasks, value: string) => {
-    setLocalTask((prev) => (prev ? { ...prev, [name]: value } : prev));
+  const handleStatusUpdate = async (status: Status) => {
+    if (localTask) {
+      // Optimistically update local state so the dropdown reflects the change immediately
+      setLocalTask((prev) => (prev ? { ...prev, status } : prev));
+      try {
+        await updateTaskStatus({
+          task_id: localTask.task_id,
+          status,
+        });
+      } catch {
+        // Revert optimistic update on failure
+        setLocalTask((prev) =>
+          prev ? { ...prev, status: localTask.status } : prev,
+        );
+      }
+    }
+  };
+
+  const handleDueDate = (due_date: string) => {
+    setLocalTask((prev) => (prev ? { ...prev, due_date } : prev));
+    try {
+      updateTaskDueDate({
+        task_id: localTask.task_id,
+        due_date: due_date,
+      });
+    } catch {
+      setLocalTask((prev) =>
+        prev ? { ...prev, due_date: localTask.due_date } : prev,
+      );
+    }
+  };
+
+  const handleUpdatePriority = (priority: Priority) => {
+    setLocalTask((prev) => (prev ? { ...prev, priority } : prev));
+
+    try {
+      updateTaskPriority({
+        task_id: localTask.task_id,
+        priority: priority,
+      });
+    } catch {
+      setLocalTask((prev) =>
+        prev ? { ...prev, priority: localTask.priority } : prev,
+      );
+    }
   };
 
   // Statistics calculation for progress bar
@@ -296,7 +305,7 @@ export function TaskDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[75vw] max-w-5xl h-[85vh] p-0 flex flex-col rounded-xl overflow-hidden border border-border">
+      <DialogContent className="w-[75vw] max-w-6xl h-[85vh] p-0 flex flex-col rounded-xl overflow-hidden border border-border">
         {/* Main Header / Topbar */}
         <DialogTitle>
           <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
@@ -347,15 +356,15 @@ export function TaskDetailModal({
                   <div className="relative flex-1">
                     <select
                       name="status"
-                      value={localTask.status || "Pending"}
+                      value={localTask?.status || "pending"}
                       onChange={(e) =>
-                        handleFieldChange("status", e.target.value as Status)
+                        handleStatusUpdate(e.target.value as Status)
                       }
                       className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer appearance-none transition"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="In Process">In Process</option>
-                      <option value="Done">Done</option>
+                      <option value="pending">Pending</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
                     </select>
                     <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-1.5">
                       {getStatusIcon(localTask.status || "pending")}
@@ -374,10 +383,8 @@ export function TaskDetailModal({
                   <input
                     name="due_date"
                     type="date"
-                    value={localTask.due_date}
-                    onChange={(e) =>
-                      handleFieldChange("due_date", e.target.value)
-                    }
+                    value={localTask?.due_date?.slice(0, 10) ?? ""}
+                    onChange={(e) => handleDueDate(e.target.value)}
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition"
                   />
                 </div>
@@ -391,12 +398,14 @@ export function TaskDetailModal({
                 <div className="flex-1">
                   <select
                     value={localTask.priority}
-                    disabled
-                    className={`w-full h-9 rounded-md border px-2.5 bg-background text-xs font-semibold focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed  ${getPriorityColor(localTask.priority)}`}
+                    onChange={(e) =>
+                      handleUpdatePriority(e.target.value as Priority)
+                    }
+                    className={`w-full h-9 rounded-md border px-2.5 bg-background text-xs font-semibold focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition  ${getPriorityColor(localTask.priority)}`}
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
                   </select>
                 </div>
               </div>
@@ -409,7 +418,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.assignee || ""}
+                    defaultValue={localTask.assignee || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >
@@ -428,7 +437,7 @@ export function TaskDetailModal({
                 </span>
                 <div className="flex-1">
                   <select
-                    value={localTask.workspace || ""}
+                    defaultValue={localTask.workspace || ""}
                     disabled
                     className="w-full h-9 rounded-md border border-border/80 px-2.5 bg-background text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer transition disabled:cursor-not-allowed disabled:bg-muted-foreground/5 text-muted-foreground/60"
                   >
@@ -572,38 +581,90 @@ export function TaskDetailModal({
                 variant="secondary"
                 className="h-5 min-w-5 flex items-center justify-center p-0 text-[10px] rounded-full"
               >
-                {comments.length}
+                {comments?.length || 0}
               </Badge>
             </div>
 
             {/* Scrollable Comment List */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="space-y-1 bg-card border border-border/50 rounded-xl p-3 shadow-2xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
-                        {comment.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-semibold text-foreground truncate">
-                        {comment.author}
-                      </h4>
+              {/* Loading skeleton */}
+              {isCommentsLoading && (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-card border border-border/50 rounded-xl p-3 space-y-2.5 animate-pulse"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-full bg-muted shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-2.5 w-24 bg-muted rounded-full" />
+                        </div>
+                        <div className="h-2 w-10 bg-muted rounded-full" />
+                      </div>
+                      <div className="pl-9 space-y-1.5">
+                        <div className="h-2 w-full bg-muted rounded-full" />
+                        <div className="h-2 w-4/5 bg-muted rounded-full" />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
-                      {comment.createdAt}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground/90 pl-8 leading-relaxed whitespace-pre-wrap">
-                    {comment.content}
-                  </p>
+                  ))}
                 </div>
-              ))}
-              <div ref={commentsEndRef} />
+              )}
+
+              {/* Error state */}
+              {isCommentsError && !isCommentsLoading && (
+                <div className="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
+                  <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">Failed to load comments</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Please try again later.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!isCommentsLoading && !isCommentsError && comments.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
+                  <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center">
+                    <InboxIcon className="h-5 w-5 text-muted-foreground/60" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">No comments yet</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Be the first to leave a comment.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Comment list — oldest first */}
+              {!isCommentsLoading &&
+                !isCommentsError &&
+                comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="space-y-1 bg-card border border-border/50 rounded-xl p-3 shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar size="sm">
+                        <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
+                          {comment.avatar}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-semibold text-foreground truncate">
+                          {comment?.name}
+                        </h4>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
+                        {formatDate(comment?.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/90 pl-8 leading-relaxed whitespace-pre-wrap">
+                      {comment.content}
+                    </p>
+                  </div>
+                ))}
             </div>
 
             {/* Comment Form Pinned at the bottom */}
