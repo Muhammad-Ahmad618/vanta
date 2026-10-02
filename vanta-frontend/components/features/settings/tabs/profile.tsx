@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AppTextareaField } from "@/components/custom/appTextareaField";
-import { AppImageupload } from "@/components/custom/app-imageupload";
+import { AppTextareaField } from "@/components/shared/appTextareaField";
+import { AppImageupload } from "@/components/shared/app-imageupload";
 import { useFormik } from "formik";
 import { toast } from "sonner";
 import { profileSchema } from "@/schemas/profileSchema";
-import { AppInputField } from "@/components/custom/appInputField";
+import { AppInputField } from "@/components/shared/appInputField";
 
 export function Profile() {
   const formik = useFormik({

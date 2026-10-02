@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AppTextareaField } from "@/components/custom/appTextareaField";
+import { AppTextareaField } from "@/components/shared/appTextareaField";
 import {
   MessageSquarePlus,
   Bug,

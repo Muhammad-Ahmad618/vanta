@@ -1,6 +1,6 @@
 "use client";
-import { AppInputField } from "@/components/custom/appInputField";
-import { AppTextareaField } from "@/components/custom/appTextareaField";
+import { AppInputField } from "@/components/shared/appInputField";
+import { AppTextareaField } from "@/components/shared/appTextareaField";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,

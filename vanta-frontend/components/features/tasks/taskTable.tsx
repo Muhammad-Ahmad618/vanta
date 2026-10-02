@@ -33,7 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tasks, TaskTableProps } from "@/types/task";
-import { StatusLabel } from "@/components/custom/status-label";
+import { StatusLabel } from "@/components/shared/status-label";
 
 const columns = [
   "id",

@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StatusLabel } from "@/components/custom/status-label";
+import { StatusLabel } from "@/components/shared/status-label";
 import { recentTasks } from "@/types/dashboard";
 import { formatDate } from "@/lib/dateFormater";
 import { toast } from "sonner";

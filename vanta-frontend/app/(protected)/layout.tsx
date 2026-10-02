@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/custom/app-sidebar";
-import { SiteHeader } from "@/components/custom/site-header";
+import { SiteHeader } from "@/components/shared/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function ProtectedLayout({

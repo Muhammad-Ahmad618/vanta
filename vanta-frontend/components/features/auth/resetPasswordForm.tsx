@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/shared/formHeader";
-import { AppInputField } from "@/components/custom/appInputField";
+import { AppInputField } from "@/components/shared/appInputField";
 import { useFormik } from "formik";
 import { resetPasswordSchema } from "@/schemas/authSchema";
 import { Loader2, Lock } from "lucide-react";

@@ -22,7 +22,7 @@ import {
   useRemoveTask,
 } from "@/hooks/user/tasks";
 import { TableSkeleton } from "@/components/custom/table-skeleton";
-import { SectionError } from "@/components/custom/error-block";
+import { SectionError } from "@/components/shared/error-block";
 import { Loader2, Trash2 } from "lucide-react";
 
 export function PersonalTasks() {
@@ -43,7 +43,12 @@ export function PersonalTasks() {
     Tasks | undefined
   >(undefined);
 
-  const { data: tasks, isLoading, isError } = useGetAllTasks(page, limit);
+  const {
+    data: tasks,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetAllTasks(page, limit);
   const { mutateAsync: updateTask, isPending } = useUpdateTask();
   const { mutateAsync: deleteTask, isPending: isPendingDelete } =
     useRemoveTask();
@@ -84,7 +89,9 @@ export function PersonalTasks() {
       {isLoading ? (
         <TableSkeleton />
       ) : isError ? (
-        <SectionError />
+        <div className="mt-5 border rounded-xl p-2">
+          <SectionError onRetry={refetch} />
+        </div>
       ) : (
         <TaskTable
           data={tasks?.data || []}

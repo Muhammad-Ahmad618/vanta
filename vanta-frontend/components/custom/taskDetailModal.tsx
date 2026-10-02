@@ -2,29 +2,26 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Tasks, Priority, Status } from "@/types/task";
 import {
-  Sparkles,
   Send,
   Calendar,
   User,
   Briefcase,
-  CheckCircle2,
-  Clock,
-  CircleDot,
-  Plus,
-  Trash2,
-  CheckSquare,
-  Square,
   MessageSquare,
   AlertCircle,
   InboxIcon,
 } from "lucide-react";
-import { SubTask, TaskDetailModalProps } from "@/types/task";
+import { TaskDetailModalProps } from "@/types/task";
+import { getPriorityColor } from "./priority-color";
+import { getStatusIcon } from "./status-icon";
+import { NoDataBlock } from "../shared/no-data-block";
+import { AiTaskBreakDown } from "./task-break-down";
 import {
   useUpdateTaskStatus,
   useUpdateTaskDueDate,
@@ -45,194 +42,18 @@ export function TaskDetailModal({
   const [localTask, setLocalTask] = useState<Tasks | undefined>(task);
   const [newComment, setNewComment] = useState("");
 
-  // AI breakdown states
-  const [subtasks, setSubtasks] = useState<SubTask[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStep, setGenerationStep] = useState("");
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
-
   const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
   const { mutate: updateTaskDueDate } = useUpdateTaskDueDate();
   const { mutateAsync: updateTaskPriority } = useUpdatePriority();
   const { mutateAsync: createTaskComment } = useCreateTaskComment();
   const {
-    data: commentsRaw,
+    data: comments,
     isLoading: isCommentsLoading,
     isError: isCommentsError,
   } = useGetTaskComments(localTask?.task_id);
 
-  // Sort ascending so the first comment posted appears at the top
-  const comments = commentsRaw
-    ? [...commentsRaw].sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-      )
-    : [];
-
   if (!localTask) return null;
 
-  // Status Icon Selector
-  const getStatusIcon = (status: Status) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />;
-      case "in_progress":
-        return (
-          <CircleDot className="h-4 w-4 text-blue-500 animate-pulse shrink-0" />
-        );
-      default:
-        return <Clock className="h-4 w-4 text-amber-500 shrink-0" />;
-    }
-  };
-
-  // Priority Badge styling
-  const getPriorityColor = (priority: Priority) => {
-    switch (priority) {
-      case "high":
-        return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/50";
-      case "medium":
-        return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50";
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/30 dark:text-slate-400 dark:border-slate-800/50";
-    }
-  };
-
-  // AI Breakdown generator
-  const handleGenerateAIBreakdown = () => {
-    setIsGenerating(true);
-    setGenerationStep("Analyzing task specifications...");
-
-    setTimeout(() => {
-      setGenerationStep("Decomposing tasks into structural requirements...");
-
-      setTimeout(() => {
-        setGenerationStep("Finalizing checklist of deliverables...");
-
-        setTimeout(() => {
-          let generated: SubTask[] = [];
-
-          if (
-            localTask.title.toLowerCase().includes("payment") ||
-            localTask.title.toLowerCase().includes("stripe")
-          ) {
-            generated = [
-              {
-                id: "s-1",
-                title:
-                  "Set up Stripe developer dashboard & API credentials keys",
-                completed: false,
-              },
-              {
-                id: "s-2",
-                title:
-                  "Design responsive Stripe Elements payment form input UI",
-                completed: false,
-              },
-              {
-                id: "s-3",
-                title: "Develop backend API endpoint to create PaymentIntents",
-                completed: false,
-              },
-              {
-                id: "s-4",
-                title: "Implement security webhook verification checks",
-                completed: false,
-              },
-            ];
-          } else if (
-            localTask.title.toLowerCase().includes("auth") ||
-            localTask.title.toLowerCase().includes("user")
-          ) {
-            generated = [
-              {
-                id: "s-1",
-                title: "Isolate token expiration cookies issue locally",
-                completed: false,
-              },
-              {
-                id: "s-2",
-                title: "Optimize refresh token rotation middleware handlers",
-                completed: false,
-              },
-              {
-                id: "s-3",
-                title: "Add strict CORS credentials validation checks",
-                completed: false,
-              },
-              {
-                id: "s-4",
-                title:
-                  "Run automated regression tests for authentication pipeline",
-                completed: false,
-              },
-            ];
-          } else {
-            generated = [
-              {
-                id: "s-1",
-                title: "Review requirements sheet and identify missing details",
-                completed: false,
-              },
-              {
-                id: "s-2",
-                title:
-                  "Design technical implementation layout & utility interfaces",
-                completed: false,
-              },
-              {
-                id: "s-3",
-                title:
-                  "Implement core functional elements & error bounds handler",
-                completed: false,
-              },
-              {
-                id: "s-4",
-                title: "Verify features flow using integration test scenarios",
-                completed: false,
-              },
-            ];
-          }
-
-          setSubtasks(generated);
-          setIsGenerating(false);
-          setGenerationStep("");
-          toast.success("AI Task Breakdown generated successfully!", {
-            icon: <Sparkles className="h-4 w-4 text-primary" />,
-          });
-        }, 600);
-      }, 600);
-    }, 600);
-  };
-
-  // Subtask Handlers
-  const toggleSubtask = (id: string) => {
-    setSubtasks((prev) =>
-      prev.map((sub) =>
-        sub.id === id ? { ...sub, completed: !sub.completed } : sub,
-      ),
-    );
-  };
-
-  const deleteSubtask = (id: string) => {
-    setSubtasks((prev) => prev.filter((sub) => sub.id !== id));
-    toast.info("Subtask removed");
-  };
-
-  const handleAddSubtask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubtaskTitle.trim()) return;
-
-    const newSub: SubTask = {
-      id: `s-manual-${Date.now()}`,
-      title: newSubtaskTitle.trim(),
-      completed: false,
-    };
-    setSubtasks((prev) => [...prev, newSub]);
-    setNewSubtaskTitle("");
-    toast.success("Subtask added");
-  };
-
-  // Add Comment Handler
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -294,14 +115,6 @@ export function TaskDetailModal({
       );
     }
   };
-
-  // Statistics calculation for progress bar
-  const totalSubtasks = subtasks.length;
-  const completedSubtasks = subtasks.filter((s) => s.completed).length;
-  const completionPercentage =
-    totalSubtasks > 0
-      ? Math.round((completedSubtasks / totalSubtasks) * 100)
-      : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -450,123 +263,7 @@ export function TaskDetailModal({
             </div>
 
             {/* AI Task Breakdown Section */}
-            <div className="space-y-4 mt-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 animate-pulse" />
-                  AI Task Breakdown
-                </label>
-
-                {subtasks.length === 0 && !isGenerating && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateAIBreakdown}
-                    className="h-8 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/5 border-primary/20 hover:border-primary/40 rounded-lg cursor-pointer bg-gradient-to-r from-primary/5 to-purple-500/5 hover:from-primary/10 hover:to-purple-500/10 transition-all duration-300"
-                  >
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5 animate-spin-slow text-primary" />
-                    Generate Breakdown
-                  </Button>
-                )}
-              </div>
-
-              {/* Loading Generator State */}
-              {isGenerating && (
-                <div className="border border-border/60 rounded-xl p-5 bg-muted/10 space-y-3 animate-pulse">
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex items-center justify-center">
-                      <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <span className="text-xs font-semibold text-foreground">
-                      {generationStep}
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary to-purple-500 w-[60%] animate-infinite-loading"></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Generated Subtasks Checklist */}
-              {subtasks.length > 0 && (
-                <div className="border border-border/60 rounded-xl p-4 bg-muted/5 space-y-4 transition-all">
-                  {/* Progress Indicator */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-muted-foreground">
-                        Subtask progress
-                      </span>
-                      <span className="font-semibold text-primary">
-                        {completionPercentage}% Completed
-                      </span>
-                    </div>
-                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-primary to-purple-500"
-                        style={{ width: `${completionPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* Subtask list */}
-                  <div className="space-y-2.5">
-                    {subtasks.map((sub) => (
-                      <div
-                        key={sub.id}
-                        className="flex items-start gap-2.5 group/subitem py-1 hover:bg-muted/10 px-1 rounded-md transition"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => toggleSubtask(sub.id)}
-                          className="mt-0.5 text-muted-foreground hover:text-primary transition shrink-0 cursor-pointer"
-                        >
-                          {sub.completed ? (
-                            <CheckSquare className="h-4.5 w-4.5 text-primary fill-primary/10" />
-                          ) : (
-                            <Square className="h-4.5 w-4.5" />
-                          )}
-                        </button>
-                        <span
-                          className={`text-xs flex-1 text-foreground leading-normal ${sub.completed ? "line-through text-muted-foreground" : ""}`}
-                        >
-                          {sub.title}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => deleteSubtask(sub.id)}
-                          className="opacity-0 group-hover/subitem:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded transition shrink-0 cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Manual add subtask */}
-                  <form
-                    onSubmit={handleAddSubtask}
-                    className="flex gap-2 pt-2 border-t border-border/40"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Add custom subtask..."
-                      value={newSubtaskTitle}
-                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                      className="flex-1 h-8 rounded-lg border border-border/80 px-2.5 text-xs bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                    />
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="h-8 px-2.5 rounded-lg text-xs font-semibold cursor-pointer"
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Add
-                    </Button>
-                  </form>
-                </div>
-              )}
-            </div>
+            <AiTaskBreakDown task_id={localTask?.task_id || 0} />
           </div>
 
           {/* Right Panel: 30% Comment Section (col-span-3) */}
@@ -593,18 +290,18 @@ export function TaskDetailModal({
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="bg-card border border-border/50 rounded-xl p-3 space-y-2.5 animate-pulse"
+                      className="bg-card border border-border/50 rounded-xl p-3 space-y-2.5"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-full bg-muted shrink-0" />
+                        <Skeleton className="h-7 w-7 rounded-full shrink-0" />
                         <div className="flex-1 space-y-1.5">
-                          <div className="h-2.5 w-24 bg-muted rounded-full" />
+                          <Skeleton className="h-2.5 w-24 rounded-full" />
                         </div>
-                        <div className="h-2 w-10 bg-muted rounded-full" />
+                        <Skeleton className="h-2 w-10 rounded-full" />
                       </div>
                       <div className="pl-9 space-y-1.5">
-                        <div className="h-2 w-full bg-muted rounded-full" />
-                        <div className="h-2 w-4/5 bg-muted rounded-full" />
+                        <Skeleton className="h-2 w-full rounded-full" />
+                        <Skeleton className="h-2 w-4/5 rounded-full" />
                       </div>
                     </div>
                   ))}
@@ -612,35 +309,34 @@ export function TaskDetailModal({
               )}
 
               {/* Error state */}
-              {isCommentsError && !isCommentsLoading && (
+              {!isCommentsLoading && isCommentsError && (
                 <div className="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
                   <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
                     <AlertCircle className="h-5 w-5 text-destructive" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-foreground">Failed to load comments</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Please try again later.</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      Failed to load comments
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Please try again later.
+                    </p>
                   </div>
                 </div>
               )}
-
               {/* Empty state */}
-              {!isCommentsLoading && !isCommentsError && comments.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
-                  <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center">
-                    <InboxIcon className="h-5 w-5 text-muted-foreground/60" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">No comments yet</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Be the first to leave a comment.</p>
-                  </div>
-                </div>
-              )}
-
+              {!isCommentsLoading &&
+                !isCommentsError &&
+                comments?.length === 0 && (
+                  <NoDataBlock
+                    heading="No comments yet"
+                    subtext=" Be the first to leave a comment."
+                  />
+                )}
               {/* Comment list — oldest first */}
               {!isCommentsLoading &&
                 !isCommentsError &&
-                comments.map((comment) => (
+                comments?.map((comment) => (
                   <div
                     key={comment.id}
                     className="space-y-1 bg-card border border-border/50 rounded-xl p-3 shadow-2xs"

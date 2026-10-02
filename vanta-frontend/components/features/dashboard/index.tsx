@@ -21,7 +21,7 @@ import { StatCardSkeleton } from "@/components/custom/stat-card-skeleton";
 import { ChartSkeleton } from "@/components/custom/chart-skeleton";
 import { AtRiskSkeleton } from "@/components/custom/atrisk-list-skeleton";
 import { TableSkeleton } from "@/components/custom/table-skeleton";
-import { SectionError } from "@/components/custom/error-block";
+import { SectionError } from "@/components/shared/error-block";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
 

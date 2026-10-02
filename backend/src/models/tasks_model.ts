@@ -340,3 +340,23 @@ export const updatePriority = async (
     throw error;
   }
 };
+
+export const getSubTasks = async (task_id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+      task_id,
+      title,
+      description,
+      priority
+      FROM tasks
+      WHERE parent_task_id = $1 AND deleted_at IS NULL
+      `,
+      [task_id],
+    );
+    return result.rows;
+  } catch (error) {
+    console.log("Error Fetching Sub Tasks Please Try Again.", error);
+    throw error;
+  }
+};

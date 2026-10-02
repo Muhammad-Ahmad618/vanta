@@ -4,6 +4,7 @@ import {
   CreateTaskPayload,
   UpdateTaskPayload,
   Priority,
+  GeneratedSubTask,
 } from "@/types/task";
 import api from "@/lib/axios";
 import { ApiError } from "next/dist/server/api-utils";
@@ -188,6 +189,55 @@ export const useUpdatePriority = () => {
 
     onError: (error: ApiError) => {
       toast.error(error?.message || "Failed to update task priority");
+    },
+  });
+};
+
+export const useGenerateTaskBreakDown = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (task_id: number) => {
+      const response = await api.get(`/task/${task_id}/breakdown`);
+      const subtasksData = response.data?.data || response.data || [];
+      return Array.isArray(subtasksData) ? subtasksData : [];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["subtasks"],
+      });
+      toast.success("Subtasks generated successfully");
+    },
+    onError: (error: ApiError) => {
+      toast.error(error?.message || "Failed to generate subtasks");
+    },
+  });
+};
+
+export const useSaveSubtasks = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      task_id,
+      subtasks,
+    }: {
+      task_id: number;
+      subtasks: GeneratedSubTask[];
+    }) => {
+      const response = await api.post(`/task/${task_id}/breakdown/save`, {
+        subtasks,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["task-breakdown"],
+      });
+      toast.success("Subtasks saved successfully");
+    },
+    onError: (error: ApiError) => {
+      toast.error(error?.message || "Failed to save subtasks");
     },
   });
 };

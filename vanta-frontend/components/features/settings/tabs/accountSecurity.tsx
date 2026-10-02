@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AppInputField } from "@/components/custom/appInputField";
+import { AppInputField } from "@/components/shared/appInputField";
 import { PasswordStrength } from "@/components/custom/password-strenght";
 import { useFormik } from "formik";
 import { resetPasswordSchema } from "@/schemas/resetPasswordSchema";

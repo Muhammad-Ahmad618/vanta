@@ -4,8 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // ── Recent tasks table skeleton ───────────────────────────────────────────────
 export function TableSkeleton() {
   return (
-    <div className="space-y-3">
-      <Skeleton className="h-5 w-32 rounded" />
+    <div className="space-y-3 mt-5">
       <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
         <div className="bg-muted/40 flex gap-4 px-5 py-3">
           {[14, 28, 40, 16, 20, 20, 20, 16, 12].map((w, i) => (

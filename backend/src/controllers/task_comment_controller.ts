@@ -37,7 +37,7 @@ export const fetchAllCommentsOfATask = async (req: Request, res: Response) => {
     const result = await getAllComments(task_id);
 
     if (result.length === 0) {
-      return res.status(200).json({ message: "No Comments Found" });
+      return res.status(200).json({ message: "No Comments Found", data: [] });
     }
 
     return res

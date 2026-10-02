@@ -7,13 +7,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { AppInputField } from "@/components/custom/appInputField";
-import { AppTextareaField } from "@/components/custom/appTextareaField";
+import { AppInputField } from "@/components/shared/appInputField";
+import { AppTextareaField } from "@/components/shared/appTextareaField";
 import { Button } from "@/components/ui/button";
 import { useFormik } from "formik";
 import { Loader2 } from "lucide-react";
 import { taskSchema } from "@/schemas/taskSchema";
-import { AppDropDown } from "@/components/custom/app-dropdown";
+import { AppDropDown } from "@/components/shared/app-dropdown";
 import { TaskSheetProps } from "@/types/task";
 
 export function TaskSheet({

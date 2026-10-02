@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NavUser } from "./nav-user";
+import { NavUser } from "../custom/nav-user";
 import { SearchInput } from "./search-input";
 import { Bell, CheckCheck, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";

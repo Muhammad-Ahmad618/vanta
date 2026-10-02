@@ -28,6 +28,14 @@ export interface SubTask {
   completed: boolean;
 }
 
+export interface GeneratedSubTask {
+  id?: string;
+  title: string;
+  description?: string;
+  priority: Priority;
+  completed?: boolean;
+}
+
 export interface Comment {
   id: string;
   author: string;

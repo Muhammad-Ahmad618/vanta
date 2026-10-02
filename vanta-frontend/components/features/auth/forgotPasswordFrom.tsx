@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AppInputField } from "@/components/custom/appInputField";
+import { AppInputField } from "@/components/shared/appInputField";
 import { Button } from "@/components/ui/button";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";

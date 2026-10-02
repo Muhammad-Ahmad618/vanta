@@ -1,6 +1,6 @@
 "use client";
 
-import { AppInputField } from "@/components/custom/appInputField";
+import { AppInputField } from "@/components/shared/appInputField";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
